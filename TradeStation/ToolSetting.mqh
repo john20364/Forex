@@ -38,7 +38,8 @@ ToolSetting::ToolSetting()
   {
    DefaultSetting();
 
-   m_filename="ToolWindow"+Symbol()+EnumToString(ENUM_TIMEFRAMES(_Period));
+   //m_filename="ToolWindow"+Symbol()+EnumToString(ENUM_TIMEFRAMES(_Period));
+   m_filename="ToolWindow"+Symbol();
 
    int fh=FileOpen(m_filename,FILE_READ|FILE_BIN|FILE_COMMON);
    if(fh!=INVALID_HANDLE)

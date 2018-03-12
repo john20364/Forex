@@ -29,13 +29,18 @@ private:
    TradeWindowSetting setting;
    void              ReadSettings(void);
    void              WriteSettings(void);
+   void              SetButtonState(Button *button,bool selected);
 protected:
-   Label            *m_test_label;
-   Label            *m_test_label2;
-   Button           *m_test_button;
-   Button           *m_test_button2;
-   Label            *m_edit_label;
-   Edit             *m_edit;
+   Label            *m_risk_paragraph;
+   Button           *m_percentage_button;
+   Button           *m_lot_size_button;
+   Label            *m_risk_percentage_label;
+   Edit             *m_risk_percentage_edit;
+   Label            *m_lot_size_label;
+   Edit             *m_lot_size_edit;
+   Label            *m_reward_to_risk_label;
+   Edit             *m_reward_to_risk_edit;
+
 public:
                      TradeWindow(const string name="Window",
                                                    const int x=10,
@@ -74,39 +79,58 @@ TradeWindow::TradeWindow(const string name,
    int row=0;
 
    m.Columns(1);
-
-   m_test_label=CreatLabel(m_name+"TestLabel",m.Rect(row++,0));
-   m_test_label2=CreatLabel(m_name+"TestLabel2",m.Rect(row++,0));
-
-   m_test_label.SetText("Hello");
-   m_test_label2.SetText("Forex");
+   dim=m.Rect(row,0);
+   m_risk_paragraph=CreateParagraph(m_name+"m_risk_label",dim);
+   m_risk_paragraph.SetText("Risk");
+   AddChild(m_risk_paragraph);
 
    m.Columns(2);
+   row++;
    dim=m.Rect(row,0);
-   m_test_button=CreateButton(m_name+"TestButton",dim);
-   m_test_button.SetText("Hit me!");
-
-   dim=m.Rect(row++,1);
-   m_test_button2=CreateButton(m_name+"TestButton2",dim);
-   m_test_button2.SetText("Trade");
-
-   dim=m.Rect(row,0);
-   m_edit_label=CreatLabel(m_name+"m_edit_label",dim);
-   m_edit_label.SetText("edit1");
+   m_percentage_button=CreateButton(m_name+"m_percentage_button",dim);
+   m_percentage_button.SetText("Percentage");
+   AddChild(m_percentage_button);
 
    dim=m.Rect(row,1);
-   m_edit=CreateEdit(m_name+"m_edit",dim);
-   m_edit.SetText(DoubleToString(0.0,2));
+   m_lot_size_button=CreateButton(m_name+"m_lot_size_button",dim);
+   m_lot_size_button.SetText("Lot Size");
+   AddChild(m_lot_size_button);
+
+   m.Columns(4);
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,2).right;
+   m_risk_percentage_label=CreateLabel(m_name+"m_risk_percentage_label",dim);
+   m_risk_percentage_label.SetText("Risk Percentage");
+   AddChild(m_risk_percentage_label);
+
+   dim=m.Rect(row,3);
+   m_risk_percentage_edit=CreateEdit(m_name+"m_risk_percentage_edit",dim);
+   AddChild(m_risk_percentage_edit);
+
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,2).right;
+   m_lot_size_label=CreateLabel(m_name+"m_lot_size_label",dim);
+   m_lot_size_label.SetText("Lot Size");
+   AddChild(m_lot_size_label);
+
+   dim=m.Rect(row,3);
+   m_lot_size_edit=CreateEdit(m_name+"m_lot_size_edit",dim);
+   AddChild(m_lot_size_edit);
+
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,2).right;
+   m_reward_to_risk_label=CreateLabel(m_name+"m_reward_to_risk_label",dim);
+   m_reward_to_risk_label.SetText("Reward to Risk");
+   AddChild(m_reward_to_risk_label);
+
+   dim=m.Rect(row,3);
+   m_reward_to_risk_edit=CreateEdit(m_name+"m_reward_to_risk_edit",dim);
+   AddChild(m_reward_to_risk_edit);
 
    SetClientHeight(dim.bottom-GetClientY()+5);
-
-   AddChild(m_test_label);
-   AddChild(m_test_label2);
-   AddChild(m_test_button);
-   AddChild(m_test_button2);
-   AddChild(m_edit_label);
-   AddChild(m_edit);
-
    ReadSettings();
   }
 //+------------------------------------------------------------------+
@@ -115,6 +139,22 @@ TradeWindow::TradeWindow(const string name,
 TradeWindow::~TradeWindow()
   {
    WriteSettings();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::SetButtonState(Button *button,bool selected)
+  {
+   if(selected)
+     {
+      button.SetBackColor(clrLime);
+      button.SetColor(clrBlack);
+     }
+   else
+     {
+      button.SetBackColor(clrRed);
+      button.SetColor(clrWhite);
+     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -129,6 +169,13 @@ void TradeWindow::ReadSettings(void)
      {
       Minimize();
      }
+
+   SetButtonState(m_percentage_button,setting.values.percentage_button);
+   SetButtonState(m_lot_size_button,setting.values.lot_size_button);
+
+   m_risk_percentage_edit.SetText(DoubleToString(setting.values.risk_percentage,2));
+   m_lot_size_edit.SetText(DoubleToString(setting.values.lot_size,2));
+   m_reward_to_risk_edit.SetText(DoubleToString(setting.values.reward_to_risk,2));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

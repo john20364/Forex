@@ -62,7 +62,7 @@ ToolWindow::ToolWindow(const string name,
 
    dim=m.Rect(row++,0);
 
-   m_test_label=CreatLabel(m_name+"TestLabel",dim);
+   m_test_label=CreateLabel(m_name+"TestLabel",dim);
 
    m_test_label.SetText("Scale fix");
 

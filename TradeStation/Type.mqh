@@ -14,6 +14,11 @@ typedef void(*TOnEvent)(int eventid,string name,void *ptr);
 struct TTradeWindow
   {
    bool              maximized;
+   bool              percentage_button;
+   bool              lot_size_button;
+   double            risk_percentage;
+   double            lot_size;
+   double            reward_to_risk;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |

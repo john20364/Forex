@@ -14,9 +14,22 @@
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-Label *CreatLabel(string name,CRect &rect)
+Label *CreateLabel(string name,CRect &rect)
   {
    return(new Label(name, rect.left, rect.top, rect.Width(), rect.Height()));
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+Label *CreateParagraph(string name,CRect &rect) 
+  {
+   Label *label = CreateLabel(name,rect);
+   label.SetTextAlignment(ALIGN_CENTER);
+   label.SetColor(clrYellow);
+   label.SetBackColor(clrBlack);
+   label.SetBorderColor(clrBlack);
+
+   return(label);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

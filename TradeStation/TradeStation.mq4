@@ -28,10 +28,10 @@ int OnInit()
 //PrintFormat("EnumToString(ENUM_TIMEFRAMES(_Period))=%s",EnumToString(ENUM_TIMEFRAMES(_Period)));
    tsmodel=new TSModel();
    
-   trade_win= new TradeWindow("Trade Station",10,20,200,100);
+   trade_win= new TradeWindow("Trade Station",10,20,300,100);
    trade_win.Attach(tsmodel);
    
-   tool_win = new ToolWindow("Toolbox",250,20,200,100);
+   tool_win = new ToolWindow("Toolbox",320,20,330,100);
 //--- create timer
 //EventSetTimer(60);
 

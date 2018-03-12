@@ -15,19 +15,20 @@
 class TSModel
   {
 private:
-   CChart            *m_chart;
+   CChart           *m_chart;
 
 public:
                      TSModel();
                     ~TSModel();
-   CChart            *Chart(void);
+   CChart           *Chart(void);
+   int               NumberOfDigits(void);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 TSModel::TSModel()
   {
-   m_chart = new CChart();
+   m_chart=new CChart();
    m_chart.Attach(0);
    m_chart.EventMouseMove();
    m_chart.Foreground(false);
@@ -43,8 +44,13 @@ TSModel::~TSModel()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-CChart *TSModel::Chart(void) 
+CChart *TSModel::Chart(void)
   {
    return m_chart;
+  }
+//+------------------------------------------------------------------+
+int TSModel::NumberOfDigits(void)
+  {
+   return((int)MarketInfo(Symbol(),MODE_DIGITS));
   }
 //+------------------------------------------------------------------+
