@@ -71,6 +71,7 @@ public:
    int               GetY(void);
    int               GetWidth(void);
    int               GetHeight(void);
+   string            Text(void);
    virtual void OnClick(void){};
   };
 //+------------------------------------------------------------------+
@@ -182,6 +183,13 @@ void BaseWindow::SetText(string text)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+string BaseWindow::Text(void) 
+  {
+   return(ObjectGetString(0,m_name,OBJPROP_TEXT));
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void BaseWindow::SetTextAlignment(ENUM_ALIGN_MODE align)
   {
    m_align=align;
@@ -220,11 +228,11 @@ void BaseWindow::SetFontSize(int font_size)
 //+------------------------------------------------------------------+
 void BaseWindow::ShowWindow(bool visible)
   {
-   if(visible) 
+   if(visible)
      {
       ShowWindow();
      }
-   else 
+   else
      {
       HideWindow();
      }

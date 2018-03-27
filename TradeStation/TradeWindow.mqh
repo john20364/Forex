@@ -29,7 +29,12 @@ private:
    TradeWindowSetting setting;
    void              ReadSettings(void);
    void              WriteSettings(void);
-   void              SetButtonState(Button *button,bool selected);
+   void              UpdateRiskType(void);
+   void              SetButtonState(Button *button,bool state);
+   void              SetEditState(Edit *edit,bool state);
+   void              UpdateOrderType(void);
+   void              UpdateState(bool all=true);
+   void              UpdateTradeState(void);
 protected:
    Label            *m_risk_paragraph;
    Button           *m_percentage_button;
@@ -40,6 +45,24 @@ protected:
    Edit             *m_lot_size_edit;
    Label            *m_reward_to_risk_label;
    Edit             *m_reward_to_risk_edit;
+
+   Label            *m_order_type_paragraph;
+   Button           *m_buy_button;
+   Button           *m_buy_stop_button;
+   Button           *m_buy_limit_button;
+   Button           *m_sell_button;
+   Button           *m_sell_stop_button;
+   Button           *m_sell_limit_button;
+
+   Label            *m_trade_data_paragraph;
+   Label            *m_spread_label;
+   Edit             *m_spread_edit;
+   Label            *m_price_label;
+   Edit             *m_price_edit;
+   Label            *m_stop_loss_label;
+   Edit             *m_stop_loss_edit;
+   Label            *m_take_profit_label;
+   Edit             *m_take_profit_edit;
 
 public:
                      TradeWindow(const string name="Window",
@@ -55,9 +78,6 @@ public:
    void              Attach(TSModel *model);
 
   };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -130,6 +150,98 @@ TradeWindow::TradeWindow(const string name,
    m_reward_to_risk_edit=CreateEdit(m_name+"m_reward_to_risk_edit",dim);
    AddChild(m_reward_to_risk_edit);
 
+   m.Columns(1);
+   row++;
+   dim=m.Rect(row,0);
+   m_order_type_paragraph=CreateParagraph(m_name+"m_order_type_paragraph",dim);
+   m_order_type_paragraph.SetText("Order Type");
+   AddChild(m_order_type_paragraph);
+
+   m.Columns(3);
+   row++;
+   dim=m.Rect(row,0);
+   m_buy_button=CreateButton(m_name+"m_buy_button",dim);
+   m_buy_button.SetText("Buy");
+   AddChild(m_buy_button);
+
+   dim=m.Rect(row,1);
+   m_buy_stop_button=CreateButton(m_name+"m_buy_stop_button",dim);
+   m_buy_stop_button.SetText("Buy Stop");
+   AddChild(m_buy_stop_button);
+
+   dim=m.Rect(row,2);
+   m_buy_limit_button=CreateButton(m_name+"m_buy_limit_button",dim);
+   m_buy_limit_button.SetText("Buy Limit");
+   AddChild(m_buy_limit_button);
+
+   row++;
+   dim=m.Rect(row,0);
+   m_sell_button=CreateButton(m_name+"m_sell_button",dim);
+   m_sell_button.SetText("Sell");
+   AddChild(m_sell_button);
+
+   dim=m.Rect(row,1);
+   m_sell_stop_button=CreateButton(m_name+"m_sell_stop_button",dim);
+   m_sell_stop_button.SetText("Sell Stop");
+   AddChild(m_sell_stop_button);
+
+   dim=m.Rect(row,2);
+   m_sell_limit_button=CreateButton(m_name+"m_sell_limit_button",dim);
+   m_sell_limit_button.SetText("Sell Limit");
+   AddChild(m_sell_limit_button);
+
+   m.Columns(1);
+   row++;
+   dim=m.Rect(row,0);
+   m_trade_data_paragraph=CreateParagraph(m_name+"m_trade_data_paragraph",dim);
+   m_trade_data_paragraph.SetText("Trade Data");
+   AddChild(m_trade_data_paragraph);
+
+   m.Columns(3);
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
+   m_spread_label=CreateLabel(m_name+"m_spread_label",dim);
+   m_spread_label.SetText("Spread in pips");
+   AddChild(m_spread_label);
+
+   dim=m.Rect(row,2);
+   m_spread_edit=CreateEdit(m_name+"m_spread_edit",dim);
+   AddChild(m_spread_edit);
+
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
+   m_price_label=CreateLabel(m_name+"m_price_label",dim);
+   m_price_label.SetText("Price");
+   AddChild(m_price_label);
+
+   dim=m.Rect(row,2);
+   m_price_edit=CreateEdit(m_name+"m_price_edit",dim);
+   AddChild(m_price_edit);
+
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
+   m_stop_loss_label=CreateLabel(m_name+"m_stop_loss_label",dim);
+   m_stop_loss_label.SetText("Stop Loss");
+   AddChild(m_stop_loss_label);
+
+   dim=m.Rect(row,2);
+   m_stop_loss_edit=CreateEdit(m_name+"m_stop_loss_edit",dim);
+   AddChild(m_stop_loss_edit);
+
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
+   m_take_profit_label=CreateLabel(m_name+"m_take_profit_label",dim);
+   m_take_profit_label.SetText("Take Profit");
+   AddChild(m_take_profit_label);
+
+   dim=m.Rect(row,2);
+   m_take_profit_edit=CreateEdit(m_name+"m_take_profit_edit",dim);
+   AddChild(m_take_profit_edit);
+
    SetClientHeight(dim.bottom-GetClientY()+5);
    ReadSettings();
   }
@@ -143,17 +255,124 @@ TradeWindow::~TradeWindow()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TradeWindow::SetButtonState(Button *button,bool selected)
+void TradeWindow::SetButtonState(Button *button,bool state)
   {
-   if(selected)
+   switch(state)
      {
-      button.SetBackColor(clrLime);
-      button.SetColor(clrBlack);
+      case true:
+         button.SetBackColor(clrLime);
+         button.SetColor(clrBlack);
+         break;
+      case false :
+         button.SetBackColor(clrRed);
+         button.SetColor(clrWhite);
+         break;
      }
-   else
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::SetEditState(Edit *edit,bool state)
+  {
+   switch(state)
      {
-      button.SetBackColor(clrRed);
-      button.SetColor(clrWhite);
+      case true:
+         edit.SetColor(clrLime);
+         edit.SetBorderColor(clrLime);
+         edit.SetReadOnly(false);
+         break;
+      case false:
+         edit.SetColor(clrOrange);
+         edit.SetBorderColor(clrOrange);
+         edit.SetReadOnly(true);
+         break;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateRiskType(void)
+  {
+   switch(m_model.RiskType())
+     {
+      case RT_PERCENTAGE:
+         SetButtonState(m_percentage_button,true);
+         SetButtonState(m_lot_size_button,false);
+
+         SetEditState(m_risk_percentage_edit,true);
+         SetEditState(m_lot_size_edit,false);
+         break;
+      case RT_LOT_SIZE:
+         SetButtonState(m_percentage_button,false);
+         SetButtonState(m_lot_size_button,true);
+
+         SetEditState(m_risk_percentage_edit,false);
+         SetEditState(m_lot_size_edit,true);
+         break;
+     }
+   m_risk_percentage_edit.SetText(DoubleToString(m_model.RiskPercentage(),2));
+   m_lot_size_edit.SetText(DoubleToString(m_model.LotSize(),2));
+   m_reward_to_risk_edit.SetText(DoubleToString(m_model.RewardToRisk(),2));
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateOrderType()
+  {
+   SetButtonState(m_buy_button,false);
+   SetButtonState(m_buy_stop_button,false);
+   SetButtonState(m_buy_limit_button,false);
+   SetButtonState(m_sell_button,false);
+   SetButtonState(m_sell_stop_button,false);
+   SetButtonState(m_sell_limit_button,false);
+
+   switch(m_model._OrderType())
+     {
+      case OP_BUY:
+         SetButtonState(m_buy_button,true);
+         break;
+      case OP_BUYSTOP:
+         SetButtonState(m_buy_stop_button,true);
+         break;
+      case OP_BUYLIMIT:
+         SetButtonState(m_buy_limit_button,true);
+         break;
+      case OP_SELL:
+         SetButtonState(m_sell_button,true);
+         break;
+      case OP_SELLSTOP:
+         SetButtonState(m_sell_stop_button,true);
+         break;
+      case OP_SELLLIMIT:
+         SetButtonState(m_sell_limit_button,true);
+         break;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateTradeState(void)
+  {
+   SetEditState(m_spread_edit,false);
+   m_spread_edit.SetText(DoubleToString(m_model.Spread(),1));
+
+   int ndigits=m_model.NumberOfDigits();
+   m_price_edit.SetText(DoubleToString(m_model.Price(),ndigits));
+   m_stop_loss_edit.SetText(DoubleToString(m_model.StopLoss(),ndigits));
+   m_take_profit_edit.SetText(DoubleToString(m_model.TakeProfit(),ndigits));
+
+   switch(m_model._OrderType())
+     {
+      case OP_BUY:
+      case OP_SELL:
+         SetEditState(m_price_edit,false);
+         break;
+      case OP_BUYLIMIT:
+      case OP_BUYSTOP:
+      case OP_SELLLIMIT:
+      case OP_SELLSTOP:
+         SetEditState(m_price_edit,true);
+         break;
      }
   }
 //+------------------------------------------------------------------+
@@ -169,13 +388,6 @@ void TradeWindow::ReadSettings(void)
      {
       Minimize();
      }
-
-   SetButtonState(m_percentage_button,setting.values.percentage_button);
-   SetButtonState(m_lot_size_button,setting.values.lot_size_button);
-
-   m_risk_percentage_edit.SetText(DoubleToString(setting.values.risk_percentage,2));
-   m_lot_size_edit.SetText(DoubleToString(setting.values.lot_size,2));
-   m_reward_to_risk_edit.SetText(DoubleToString(setting.values.reward_to_risk,2));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -183,6 +395,11 @@ void TradeWindow::ReadSettings(void)
 void TradeWindow::WriteSettings(void)
   {
    setting.values.maximized=IsMaximized();
+   setting.values.risk_type=m_model.RiskType();
+   setting.values.risk_percentage=m_model.RiskPercentage();
+   setting.values.lot_size=m_model.LotSize();
+   setting.values.reward_to_risk=m_model.RewardToRisk();
+   setting.values.order_type=m_model._OrderType();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -190,6 +407,19 @@ void TradeWindow::WriteSettings(void)
 void TradeWindow::Attach(TSModel *model)
   {
    m_model=model;
+   m_model.Init(setting.values);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateState(bool all)
+  {
+   if(all)
+     {
+      UpdateRiskType();
+      UpdateOrderType();
+     }
+   UpdateTradeState();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -198,37 +428,91 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
   {
    switch(id)
      {
+      case CHARTEVENT_CUSTOM+TRADE_STATION_MODEL_CHANGED:
+         UpdateState(true);
+         break;
+      case CHARTEVENT_CUSTOM+TRADE_STATION_MODEL_TRADE_CHANGED:
+         UpdateState(false);
+         break;
       case CHARTEVENT_OBJECT_CLICK :
-         if(!StringCompare(m_name+"TestLabel",sparam))
+         if(!StringCompare(m_name+"m_percentage_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model.RiskType(RT_PERCENTAGE);
            }
-         else if(!StringCompare(m_name+"TestLabel2",sparam))
+         else if(!StringCompare(m_name+"m_lot_size_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model.RiskType(RT_LOT_SIZE);
            }
-         else if(!StringCompare(m_name+"TestButton",sparam))
+         else if(!StringCompare(m_name+"m_buy_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model._OrderType(OP_BUY);
            }
-         else if(!StringCompare(m_name+"TestButton2",sparam))
+         else if(!StringCompare(m_name+"m_buy_stop_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model._OrderType(OP_BUYSTOP);
            }
-         else if(!StringCompare(m_name+"m_edit_label",sparam))
+         else if(!StringCompare(m_name+"m_buy_limit_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model._OrderType(OP_BUYLIMIT);
            }
-         else if(!StringCompare(m_name+"m_edit",sparam))
+         else if(!StringCompare(m_name+"m_sell_button",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model._OrderType(OP_SELL);
            }
+         else if(!StringCompare(m_name+"m_sell_stop_button",sparam))
+           {
+            m_model._OrderType(OP_SELLSTOP);
+           }
+         else if(!StringCompare(m_name+"m_sell_limit_button",sparam))
+           {
+            m_model._OrderType(OP_SELLLIMIT);
+           }
+         UpdateState();
          break;
       case CHARTEVENT_OBJECT_ENDEDIT:
-         if(!StringCompare(m_name+"m_edit",sparam))
+         if(!StringCompare(m_name+"m_risk_percentage_edit",sparam))
            {
-            PrintFormat("TradeWindow CHARTEVENT_OBJECT_ENDEDIT: [%s]",sparam);
+            if(!m_model.RiskPercentage(StringToDouble(m_risk_percentage_edit.Text())))
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
            }
+         else if(!StringCompare(m_name+"m_lot_size_edit",sparam))
+           {
+            if(!m_model.LotSize(StringToDouble(m_lot_size_edit.Text())))
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
+           }
+         else if(!StringCompare(m_name+"m_reward_to_risk_edit",sparam))
+           {
+            if(!m_model.RewardToRisk(StringToDouble(m_reward_to_risk_edit.Text())))
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
+           }
+         else if(!StringCompare(m_name+"m_price_edit",sparam))
+           {
+            if(!m_model.Price(StringToDouble(m_price_edit.Text()))) 
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
+           }
+         else if(!StringCompare(m_name+"m_stop_loss_edit",sparam))
+           {
+            if(!m_model.StopLoss(StringToDouble(m_stop_loss_edit.Text())))
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
+           }
+         else if(!StringCompare(m_name+"m_take_profit_edit",sparam))
+           {
+            if(!m_model.TakeProfit(StringToDouble(m_take_profit_edit.Text())))
+              {
+               MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+              }
+           }
+         UpdateState();
          break;
      }
    Window::OnChartEvent(id,lparam,dparam,sparam);

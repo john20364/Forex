@@ -108,7 +108,6 @@ Window::~Window()
 //+------------------------------------------------------------------+
 void Window::Minimize(void)
   {
-   PrintFormat("void Window::Minimize(void)");
    m_client_visible=false;
    BaseWindow *w=children.GetFirst();
    while(w)

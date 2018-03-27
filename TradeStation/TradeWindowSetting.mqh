@@ -28,11 +28,11 @@ public:
 void TradeWindowSetting::DefaultSetting(void)
   {
    values.maximized=true;
-   values.percentage_button=true;
-   values.lot_size_button=false;
+   values.risk_type=RT_PERCENTAGE;
    values.risk_percentage=0.5;
    values.lot_size=0.1;
    values.reward_to_risk=1.0;
+   values.order_type=OP_BUY;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

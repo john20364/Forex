@@ -6,19 +6,26 @@
 #property copyright "Copyright 2017, MetaQuotes Software Corp."
 #property link      "https://www.mql5.com"
 #property strict
-
-typedef void(*TOnEvent)(int eventid,string name,void *ptr);
+//typedef void(*TOnEvent)(int eventid,string name,void *ptr);
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+enum ENUM_RISK_TYPE
+  {
+   RT_PERCENTAGE=0,
+   RT_LOT_SIZE=1
+  };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 struct TTradeWindow
   {
    bool              maximized;
-   bool              percentage_button;
-   bool              lot_size_button;
+   ENUM_RISK_TYPE    risk_type;
    double            risk_percentage;
    double            lot_size;
    double            reward_to_risk;
+   int               order_type;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
