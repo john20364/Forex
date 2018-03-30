@@ -17,6 +17,7 @@
 #include "WinUtil.mqh"
 #include "TSModel.mqh"
 #include "TradeWindowSetting.mqh"
+#include "TSVisualTool.mqh"
 
 class TradeWindow;
 //+------------------------------------------------------------------+
@@ -27,6 +28,8 @@ class TradeWindow : public Window
 private:
    TSModel          *m_model;
    TradeWindowSetting setting;
+   TSVisualTool      visualtool;
+
    void              ReadSettings(void);
    void              WriteSettings(void);
    void              UpdateRiskType(void);
@@ -35,6 +38,7 @@ private:
    void              UpdateOrderType(void);
    void              UpdateState(bool all=true);
    void              UpdateTradeState(void);
+   void              UpdateVisualToolState(bool state);
 protected:
    Label            *m_risk_paragraph;
    Button           *m_percentage_button;
@@ -63,6 +67,8 @@ protected:
    Edit             *m_stop_loss_edit;
    Label            *m_take_profit_label;
    Edit             *m_take_profit_edit;
+   Label            *m_visual_tool_label;
+   Button           *m_visual_tool_button;
 
 public:
                      TradeWindow(const string name="Window",
@@ -207,6 +213,7 @@ TradeWindow::TradeWindow(const string name,
 
    dim=m.Rect(row,2);
    m_spread_edit=CreateEdit(m_name+"m_spread_edit",dim);
+   SetEditState(m_spread_edit,false);
    AddChild(m_spread_edit);
 
    row++;
@@ -242,6 +249,18 @@ TradeWindow::TradeWindow(const string name,
    m_take_profit_edit=CreateEdit(m_name+"m_take_profit_edit",dim);
    AddChild(m_take_profit_edit);
 
+   row++;
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
+   m_visual_tool_label=CreateLabel(m_name+"m_visual_tool_label",dim);
+   m_visual_tool_label.SetText("Visual Tool");
+   AddChild(m_visual_tool_label);
+
+   dim=m.Rect(row,2);
+   m_visual_tool_button=CreateButton(m_name+"m_visual_tool_button",dim);
+   m_visual_tool_button.SetText("Off");
+   AddChild(m_visual_tool_button);
+
    SetClientHeight(dim.bottom-GetClientY()+5);
    ReadSettings();
   }
@@ -251,6 +270,7 @@ TradeWindow::TradeWindow(const string name,
 TradeWindow::~TradeWindow()
   {
    WriteSettings();
+   visualtool.Detach();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -353,7 +373,6 @@ void TradeWindow::UpdateOrderType()
 //+------------------------------------------------------------------+
 void TradeWindow::UpdateTradeState(void)
   {
-   SetEditState(m_spread_edit,false);
    m_spread_edit.SetText(DoubleToString(m_model.Spread(),1));
 
    int ndigits=m_model.NumberOfDigits();
@@ -408,6 +427,7 @@ void TradeWindow::Attach(TSModel *model)
   {
    m_model=model;
    m_model.Init(setting.values);
+   visualtool.Attach(m_model);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -420,6 +440,20 @@ void TradeWindow::UpdateState(bool all)
       UpdateOrderType();
      }
    UpdateTradeState();
+   visualtool.Update();
+   ChartRedraw();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateVisualToolState(bool state)
+  {
+   SetButtonState(m_visual_tool_button,state);
+   m_visual_tool_button.SetText((state ? "On" : "Off"));
+   if(visualtool.Enabled(state))
+     {
+      UpdateState();
+     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -446,28 +480,37 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
          else if(!StringCompare(m_name+"m_buy_button",sparam))
            {
             m_model._OrderType(OP_BUY);
+            UpdateVisualToolState(false);
            }
          else if(!StringCompare(m_name+"m_buy_stop_button",sparam))
            {
             m_model._OrderType(OP_BUYSTOP);
+            UpdateVisualToolState(false);
            }
          else if(!StringCompare(m_name+"m_buy_limit_button",sparam))
            {
             m_model._OrderType(OP_BUYLIMIT);
+            UpdateVisualToolState(false);
            }
          else if(!StringCompare(m_name+"m_sell_button",sparam))
            {
             m_model._OrderType(OP_SELL);
+            UpdateVisualToolState(false);
            }
          else if(!StringCompare(m_name+"m_sell_stop_button",sparam))
            {
             m_model._OrderType(OP_SELLSTOP);
+            UpdateVisualToolState(false);
            }
          else if(!StringCompare(m_name+"m_sell_limit_button",sparam))
            {
             m_model._OrderType(OP_SELLLIMIT);
+            UpdateVisualToolState(false);
            }
-         UpdateState();
+         else if(!StringCompare(m_name+"m_visual_tool_button",sparam))
+           {
+            UpdateVisualToolState(!visualtool.Enabled());
+           }
          break;
       case CHARTEVENT_OBJECT_ENDEDIT:
          if(!StringCompare(m_name+"m_risk_percentage_edit",sparam))
@@ -493,7 +536,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
            }
          else if(!StringCompare(m_name+"m_price_edit",sparam))
            {
-            if(!m_model.Price(StringToDouble(m_price_edit.Text()))) 
+            if(!m_model.Price(StringToDouble(m_price_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
               }
@@ -512,9 +555,9 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
               }
            }
-         UpdateState();
          break;
      }
+   visualtool.OnChartEvent(id,lparam,dparam,sparam);
    Window::OnChartEvent(id,lparam,dparam,sparam);
   }
 //+------------------------------------------------------------------+

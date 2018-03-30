@@ -34,6 +34,8 @@ private:
    double            m_stop_loss;
    double            m_take_profit;
 
+   bool              m_on_tick_active;
+
    void              DoNotifyChange(void);
    void              DoNotifyTradeChange(void);
 public:
@@ -41,6 +43,8 @@ public:
                     ~TSModel();
    CChart           *Chart(void);
    int               NumberOfDigits(void);
+   bool              isBuyOrder(void);
+   bool              isSellOrder(void);
 
    ENUM_RISK_TYPE    RiskType(void);
    void              RiskType(ENUM_RISK_TYPE risk_type);
@@ -67,6 +71,8 @@ public:
 
    void              TradeDataChanged(void);
    void              RiskChanged(void);
+   void              OnTickActive(bool active);
+
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -77,6 +83,7 @@ TSModel::TSModel()
    m_chart.Attach(0);
    m_chart.EventMouseMove();
    m_chart.Foreground(false);
+   m_on_tick_active=true;
    OnTick();
   }
 //+------------------------------------------------------------------+
@@ -141,13 +148,15 @@ void TSModel::TradeDataChanged(void)
       double numerator=m_take_profit-m_price;
       if(numerator<0) numerator*=-1;
       double denominator=m_stop_loss-m_price;
-      if(denominator!=0) 
+      if(denominator!=0)
         {
          if(denominator<0) denominator*=-1;
          m_reward_to_risk=numerator/denominator;
         }
      }
 
+//DoNotifyTradeChange();
+   DoNotifyChange();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -164,7 +173,7 @@ void TSModel::RiskChanged(void)
       //Caculate number of pips
       d_pips=m_price-m_stop_loss;
       if(d_pips<0) d_pips*=-1;
-      
+
       i_pips=(int)MathFloor(d_pips/PipPoint(Symbol()));
 
       if(m_risk_type==RT_PERCENTAGE)
@@ -196,6 +205,7 @@ void TSModel::RiskChanged(void)
            }
         }
      }
+   DoNotifyChange();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -461,9 +471,19 @@ bool TSModel::TakeProfit(double take_profit)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+void TSModel::OnTickActive(bool active) 
+  {
+   m_on_tick_active=active;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void TSModel::OnTick(void)
   {
-   DoNotifyTradeChange();
+   if(m_on_tick_active)
+     {
+      DoNotifyTradeChange();
+     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -492,6 +512,7 @@ void TSModel::_OrderType(int order_type)
    m_price=0;
    m_stop_loss=0;
    m_take_profit=0;
+   DoNotifyChange();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -614,5 +635,49 @@ CChart *TSModel::Chart(void)
 int TSModel::NumberOfDigits(void)
   {
    return((int)MarketInfo(Symbol(),MODE_DIGITS));
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool TSModel::isBuyOrder(void)
+  {
+   bool result=false;
+
+   switch(m_order_type)
+     {
+      case OP_BUY:
+      case OP_BUYLIMIT:
+      case OP_BUYSTOP:
+         result=true;
+         break;
+      case OP_SELL:
+      case OP_SELLLIMIT:
+      case OP_SELLSTOP:
+         result=false;
+         break;
+     }
+   return(result);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool TSModel::isSellOrder(void)
+  {
+   bool result=false;
+
+   switch(m_order_type)
+     {
+      case OP_BUY:
+      case OP_BUYLIMIT:
+      case OP_BUYSTOP:
+         result=false;
+         break;
+      case OP_SELL:
+      case OP_SELLLIMIT:
+      case OP_SELLSTOP:
+         result=true;
+         break;
+     }
+   return(result);
   }
 //+------------------------------------------------------------------+
