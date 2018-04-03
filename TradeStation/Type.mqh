@@ -33,6 +33,8 @@ struct TTradeWindow
 struct TToolWindow
   {
    bool              maximized;
+   bool              broadcast;
+   bool              scale_fix;
   };
 
 //+------------------------------------------------------------------+

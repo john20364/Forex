@@ -15,7 +15,7 @@
 #include "Button.mqh"
 #include "Edit.mqh"
 #include "WinUtil.mqh"
-#include "TSModel.mqh"
+#include "TradeModel.mqh"
 #include "TradeWindowSetting.mqh"
 #include "TSVisualTool.mqh"
 
@@ -26,19 +26,18 @@ class TradeWindow;
 class TradeWindow : public Window
   {
 private:
-   TSModel          *m_model;
+   TradeModel       *m_model;
    TradeWindowSetting setting;
    TSVisualTool      visualtool;
 
    void              ReadSettings(void);
    void              WriteSettings(void);
    void              UpdateRiskType(void);
-   void              SetButtonState(Button *button,bool state);
-   void              SetEditState(Edit *edit,bool state);
    void              UpdateOrderType(void);
    void              UpdateState(bool all=true);
    void              UpdateTradeState(void);
    void              UpdateVisualToolState(bool state);
+   void              UpdateOrderButtonState(bool state);
 protected:
    Label            *m_risk_paragraph;
    Button           *m_percentage_button;
@@ -70,6 +69,9 @@ protected:
    Label            *m_visual_tool_label;
    Button           *m_visual_tool_button;
 
+   Label            *m_order_paragraph;
+   Button           *m_order_button;
+
 public:
                      TradeWindow(const string name="Window",
                                                    const int x=10,
@@ -81,7 +83,7 @@ public:
                                   const long &lparam,
                                   const double &dparam,
                                   const string &sparam);
-   void              Attach(TSModel *model);
+   void              Attach(TradeModel *model);
 
   };
 //+------------------------------------------------------------------+
@@ -261,6 +263,18 @@ TradeWindow::TradeWindow(const string name,
    m_visual_tool_button.SetText("Off");
    AddChild(m_visual_tool_button);
 
+   m.Columns(1);
+   row++;
+   dim=m.Rect(row,0);
+   m_order_paragraph=CreateParagraph(m_name+"m_order_paragraph",dim);
+   m_order_paragraph.SetText("Order");
+   AddChild(m_order_paragraph);
+
+   row++;
+   dim=m.Rect(row,0);
+   m_order_button=CreateButton(m_name+"m_order_button",dim);
+   AddChild(m_order_button);
+
    SetClientHeight(dim.bottom-GetClientY()+5);
    ReadSettings();
   }
@@ -271,42 +285,6 @@ TradeWindow::~TradeWindow()
   {
    WriteSettings();
    visualtool.Detach();
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void TradeWindow::SetButtonState(Button *button,bool state)
-  {
-   switch(state)
-     {
-      case true:
-         button.SetBackColor(clrLime);
-         button.SetColor(clrBlack);
-         break;
-      case false :
-         button.SetBackColor(clrRed);
-         button.SetColor(clrWhite);
-         break;
-     }
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void TradeWindow::SetEditState(Edit *edit,bool state)
-  {
-   switch(state)
-     {
-      case true:
-         edit.SetColor(clrLime);
-         edit.SetBorderColor(clrLime);
-         edit.SetReadOnly(false);
-         break;
-      case false:
-         edit.SetColor(clrOrange);
-         edit.SetBorderColor(clrOrange);
-         edit.SetReadOnly(true);
-         break;
-     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -423,11 +401,46 @@ void TradeWindow::WriteSettings(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TradeWindow::Attach(TSModel *model)
+void TradeWindow::Attach(TradeModel *model)
   {
    m_model=model;
    m_model.Init(setting.values);
    visualtool.Attach(m_model);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void TradeWindow::UpdateOrderButtonState(bool state)
+  {
+   SetButtonState(m_order_button,state);
+   if(state)
+     {
+      switch(m_model._OrderType())
+        {
+         case OP_BUY:
+            m_order_button.SetText("Place "+m_buy_button.Text()+" Order");
+            break;
+         case OP_BUYLIMIT:
+            m_order_button.SetText("Place "+m_buy_limit_button.Text()+" Order");
+            break;
+         case OP_BUYSTOP:
+            m_order_button.SetText("Place "+m_buy_stop_button.Text()+" Order");
+            break;
+         case OP_SELL:
+            m_order_button.SetText("Place "+m_sell_button.Text()+" Order");
+            break;
+         case OP_SELLLIMIT:
+            m_order_button.SetText("Place "+m_sell_limit_button.Text()+" Order");
+            break;
+         case OP_SELLSTOP:
+            m_order_button.SetText("Place "+m_sell_stop_button.Text()+" Order");
+            break;
+        }
+     }
+   else
+     {
+      m_order_button.SetText("No Order");
+     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -441,6 +454,7 @@ void TradeWindow::UpdateState(bool all)
      }
    UpdateTradeState();
    visualtool.Update();
+   UpdateOrderButtonState(m_model.CanPlaceOrder());
    ChartRedraw();
   }
 //+------------------------------------------------------------------+
@@ -462,8 +476,21 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
   {
    switch(id)
      {
+      case CHARTEVENT_CUSTOM+WINDOW_MAXIMIZED:
+         if(m_name==sparam)
+           {
+            m_model.OnTickActive(true);
+            UpdateState();
+           }
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_MINIMIZED:
+         if(m_name==sparam)
+           {
+            m_model.OnTickActive(false);
+           }
+         break;
       case CHARTEVENT_CUSTOM+TRADE_STATION_MODEL_CHANGED:
-         UpdateState(true);
+         UpdateState();
          break;
       case CHARTEVENT_CUSTOM+TRADE_STATION_MODEL_TRADE_CHANGED:
          UpdateState(false);
@@ -511,6 +538,17 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
            {
             UpdateVisualToolState(!visualtool.Enabled());
            }
+         else if(!StringCompare(m_name+"m_order_button",sparam))
+           {
+            if(m_model.CanPlaceOrder())
+              {
+               UpdateVisualToolState(false);
+               if(!m_model.PlaceOrder())
+                 {
+                  MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+                 }
+              }
+           }
          break;
       case CHARTEVENT_OBJECT_ENDEDIT:
          if(!StringCompare(m_name+"m_risk_percentage_edit",sparam))
@@ -518,6 +556,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.RiskPercentage(StringToDouble(m_risk_percentage_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          else if(!StringCompare(m_name+"m_lot_size_edit",sparam))
@@ -525,6 +564,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.LotSize(StringToDouble(m_lot_size_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          else if(!StringCompare(m_name+"m_reward_to_risk_edit",sparam))
@@ -532,6 +572,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.RewardToRisk(StringToDouble(m_reward_to_risk_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          else if(!StringCompare(m_name+"m_price_edit",sparam))
@@ -539,6 +580,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.Price(StringToDouble(m_price_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          else if(!StringCompare(m_name+"m_stop_loss_edit",sparam))
@@ -546,6 +588,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.StopLoss(StringToDouble(m_stop_loss_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          else if(!StringCompare(m_name+"m_take_profit_edit",sparam))
@@ -553,6 +596,7 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
             if(!m_model.TakeProfit(StringToDouble(m_take_profit_edit.Text())))
               {
                MessageBox(m_model.LastError(),"Error",MB_ICONERROR);
+               UpdateState();
               }
            }
          break;

@@ -22,6 +22,9 @@
 
 #define TRADE_STATION_MODEL_CHANGED 1
 #define TRADE_STATION_MODEL_TRADE_CHANGED 2
+#define WINDOW_MINIMIZED 3
+#define WINDOW_MAXIMIZED 4
+#define TOOL_MODEL_CHANGED 5
 
 
 //+------------------------------------------------------------------+

@@ -8,7 +8,7 @@
 #property version   "1.00"
 #property strict
 
-#include "TSModel.mqh";
+#include "TradeModel.mqh";
 #include  <ChartObjects\ChartObjectsLines.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -17,7 +17,7 @@ class TSVisualTool
   {
 private:
    bool              m_enabled;
-   TSModel          *m_model;
+   TradeModel       *m_model;
    int               m_candle_count;
 
    void              DrawLines(void);
@@ -35,7 +35,7 @@ private:
 public:
    bool              Enabled(bool enabled);
    bool              Enabled(void);
-   void              Attach(TSModel *model);
+   void              Attach(TradeModel *model);
    void              Detach(void);
    void              Update(void);
    void              OnChartEvent(const int id,
@@ -87,7 +87,7 @@ bool TSVisualTool::Enabled(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSVisualTool::Attach(TSModel *model)
+void TSVisualTool::Attach(TradeModel *model)
   {
    m_model=model;
   }
@@ -355,7 +355,7 @@ void TSVisualTool::OnChartEvent(const int id,const long &lparam,const double &dp
                     {
                      m_take_profit_line.Price(0,m_model.TakeProfit());
                     }
-                  else 
+                  else
                     {
                      m_model.TakeProfit(m_take_profit_line.Price(0));
                     }
@@ -376,7 +376,7 @@ void TSVisualTool::OnChartEvent(const int id,const long &lparam,const double &dp
                     {
                      m_take_profit_line.Price(0,m_model.TakeProfit());
                     }
-                  else 
+                  else
                     {
                      m_model.TakeProfit(m_take_profit_line.Price(0));
                     }

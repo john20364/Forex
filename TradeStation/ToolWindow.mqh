@@ -8,12 +8,17 @@
 #property version   "1.00"
 #property strict
 
+#include <Charts/Chart.mqh>
 #include "Global.mqh"
 #include "PositionManager.mqh"
 #include "Window.mqh"
 #include "Label.mqh"
+#include "Button.mqh"
 #include "WinUtil.mqh"
 #include "ToolSetting.mqh"
+#include "ToolModel.mqh"
+
+string PeriodText[9]={"M1","M5","M15","M30","H1","H4","D1","W1","MN"};
 
 class ToolWindow;
 //+------------------------------------------------------------------+
@@ -22,12 +27,17 @@ class ToolWindow;
 class ToolWindow : public Window
   {
 private:
+   ToolModel        *m_model;
    ToolSetting       setting;
    void              ReadSettings(void);
    void              WriteSettings(void);
 protected:
-   Label            *m_test_label;
+   Label            *m_broadcast_label;
+   Button           *m_broadcast_button;
+   Button           *m_scale_fix_button;
 
+   Label            *m_period_paragraph;
+   Button           *m_period_buttons[9];
 public:
                      ToolWindow(const string name="Window",
                                                   const int x=10,
@@ -39,6 +49,10 @@ public:
                                   const long &lparam,
                                   const double &dparam,
                                   const string &sparam);
+
+   void              Attach(ToolModel *model);
+   void              UpdateState(void);
+
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -58,17 +72,45 @@ ToolWindow::ToolWindow(const string name,
    m.ControlHeight(25);
    int row=0;
 
+   m.Columns(4);
+
+   dim=m.Rect(row,0);
+   dim.right=m.Rect(row,2).right;
+
+   m_broadcast_label=CreateLabel(m_name+"m_broadcast_label",dim);
+   m_broadcast_label.SetText("Synchronize charts");
+   AddChild(m_broadcast_label);
+
+   dim=m.Rect(row,3);
+   m_broadcast_button=CreateButton(m_name+"m_broadcast_button",dim);
+   AddChild(m_broadcast_button);
+
+   row++;
    m.Columns(1);
+   dim=m.Rect(row,0);
+   m_scale_fix_button=CreateButton(m_name+"m_scale_fix_button",dim);
+   m_scale_fix_button.SetText("Scale fix");
+   AddChild(m_scale_fix_button);
 
-   dim=m.Rect(row++,0);
+   row++;
+   dim=m.Rect(row,0);
+   m_period_paragraph=CreateParagraph(m_name+"m_period_paragraph",dim);
+   m_period_paragraph.SetText("Period");
+   AddChild(m_period_paragraph);
 
-   m_test_label=CreateLabel(m_name+"TestLabel",dim);
-
-   m_test_label.SetText("Scale fix");
+// Create 9 Period Buttons
+   row++;
+   m.Columns(9);
+   for(int i=0;i<9;i++)
+     {
+      dim=m.Rect(row,i);
+      m_period_buttons[i]=CreateButton(m_name+"m_period_buttons"+IntegerToString(i),dim);
+      AddChild(m_period_buttons[i]);
+      m_period_buttons[i].SetFontSize(8);
+      m_period_buttons[i].SetText(PeriodText[i]);
+     }
 
    SetClientHeight(dim.bottom-GetClientY()+5);
-
-   AddChild(m_test_label);
    ReadSettings();
   }
 //+------------------------------------------------------------------+
@@ -81,13 +123,21 @@ ToolWindow::~ToolWindow()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+void ToolWindow::Attach(ToolModel *model)
+  {
+   m_model=model;
+   m_model.Init(setting.values);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void ToolWindow::ReadSettings(void)
   {
-   if(setting.values.maximized) 
+   if(setting.values.maximized)
      {
       Maximize();
      }
-   else 
+   else
      {
       Minimize();
      }
@@ -98,6 +148,24 @@ void ToolWindow::ReadSettings(void)
 void ToolWindow::WriteSettings(void)
   {
    setting.values.maximized=IsMaximized();
+   setting.values.broadcast=m_model.Broadcast();
+   setting.values.scale_fix=m_model.ScaleFix();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ToolWindow::UpdateState(void)
+  {
+   SetButtonState(m_broadcast_button,m_model.Broadcast());
+   m_broadcast_button.SetText(m_model.Broadcast() ? "On" : "Off");
+
+   SetButtonState(m_scale_fix_button,m_model.ScaleFix());
+
+   for(int i=0;i<ArraySize(m_period_buttons);i++)
+     {
+      SetButtonState(m_period_buttons[i],(m_model.PeriodIndex()==i) ? true : false);
+     }
+
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -106,10 +174,31 @@ void ToolWindow::OnChartEvent(const int id,const long &lparam,const double &dpar
   {
    switch(id)
      {
+      case CHARTEVENT_CHART_CHANGE:
+         Print("CHARTEVENT_CHART_CHANGE:");
+         UpdateState();
+         break;
+      case CHARTEVENT_CUSTOM+TOOL_MODEL_CHANGED:
+         UpdateState();
+         break;
       case CHARTEVENT_OBJECT_CLICK :
-         if(!StringCompare(m_name+"TestLabel",sparam))
+         if(!StringCompare(m_name+"m_broadcast_button",sparam))
            {
-            PrintFormat("ToolWindow CHARTEVENT_OBJECT_CLICK: [%s]",sparam);
+            m_model.Broadcast(!m_model.Broadcast());
+           }
+         else if(!StringCompare(m_name+"m_scale_fix_button",sparam))
+           {
+            m_model.ScaleFix(!m_model.ScaleFix());
+           }
+         else
+           {
+            for(int i=0; i<ArraySize(m_period_buttons);i++)
+              {
+               if(!StringCompare(m_name+"m_period_buttons"+IntegerToString(i),sparam)) 
+                 {
+                  m_model.PeriodIndex(i);
+                 }
+              }
            }
          break;
      }

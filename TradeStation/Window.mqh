@@ -13,7 +13,7 @@
 #include "BaseWindow.mqh"
 #include "Label.mqh"
 #include "WinCollection.mqh"
-#include "TSModel.mqh"
+#include "TradeModel.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -31,6 +31,8 @@ protected:
    bool              m_client_visible;
    Label            *m_caption_label;
 
+   void              NotifyMinimized(void);
+   void              NotifyMaximized(void);
 public:
                      Window(const string name="Window",
                                               const int x=10,
@@ -106,6 +108,22 @@ Window::~Window()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+void Window::NotifyMinimized(void)
+  {
+   string sparam=m_name;
+   EventChartCustom(0,WINDOW_MINIMIZED,0,0,sparam);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void Window::NotifyMaximized(void) 
+  {
+   string sparam=m_name;
+   EventChartCustom(0,WINDOW_MAXIMIZED,0,0,sparam);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void Window::Minimize(void)
   {
    m_client_visible=false;
@@ -116,6 +134,7 @@ void Window::Minimize(void)
       w=children.GetNext();
      }
    m_win_client.HideWindow();
+   NotifyMinimized();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -130,6 +149,7 @@ void Window::Maximize(void)
       w.ShowWindow();
       w=children.GetNext();
      }
+     NotifyMaximized();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

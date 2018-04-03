@@ -9,11 +9,13 @@
 #property strict
 
 #include "GLobal.mqh"
-#include "TSModel.mqh"
+#include "TradeModel.mqh"
+#include "ToolModel.mqh"
 #include "TradeWindow.mqh"
 #include "ToolWindow.mqh"
 
-TSModel *tsmodel;
+TradeModel *trade_model;
+ToolModel *tool_model;
 TradeWindow *trade_win;
 ToolWindow *tool_win;
 //+------------------------------------------------------------------+
@@ -26,12 +28,14 @@ int OnInit()
 
 //   PrintFormat("TerminalInfoString(TERMINAL_DATA_PATH)=%s",TerminalInfoString(TERMINAL_DATA_PATH));
 //PrintFormat("EnumToString(ENUM_TIMEFRAMES(_Period))=%s",EnumToString(ENUM_TIMEFRAMES(_Period)));
-   tsmodel=new TSModel();
+   trade_model=new TradeModel();
+   tool_model=new ToolModel();
 
    trade_win=new TradeWindow("Trade Station",0,0,300,100);
-   trade_win.Attach(tsmodel);
+   trade_win.Attach(trade_model);
 
-   tool_win=new ToolWindow("Toolbox",310,0,330,100);
+   tool_win=new ToolWindow("Toolbox",310,0,360,100);
+   tool_win.Attach(tool_model);
 //--- create timer
 //EventSetTimer(60);
 
@@ -45,7 +49,8 @@ void OnDeinit(const int reason)
   {
    delete(tool_win);
    delete(trade_win);
-   delete(tsmodel);
+   delete(tool_model);
+   delete(trade_model);
 //--- destroy timer
 //EventKillTimer();
 
@@ -56,7 +61,7 @@ void OnDeinit(const int reason)
 void OnTick()
   {
 //---
-   tsmodel.OnTick();
+   trade_model.OnTick();
   }
 //+------------------------------------------------------------------+
 //| Timer function                                                   |

@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                      TSModel.mqh |
+//|                                                   TradeModel.mqh |
 //|                        Copyright 2017, MetaQuotes Software Corp. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
@@ -19,7 +19,7 @@
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-class TSModel
+class TradeModel
   {
 private:
    CChart           *m_chart;
@@ -39,12 +39,10 @@ private:
    void              DoNotifyChange(void);
    void              DoNotifyTradeChange(void);
 public:
-                     TSModel();
-                    ~TSModel();
+                     TradeModel();
+                    ~TradeModel();
    CChart           *Chart(void);
    int               NumberOfDigits(void);
-   bool              isBuyOrder(void);
-   bool              isSellOrder(void);
 
    ENUM_RISK_TYPE    RiskType(void);
    void              RiskType(ENUM_RISK_TYPE risk_type);
@@ -73,11 +71,13 @@ public:
    void              RiskChanged(void);
    void              OnTickActive(bool active);
 
+   bool              CanPlaceOrder(void);
+   bool              PlaceOrder(void);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-TSModel::TSModel()
+TradeModel::TradeModel()
   {
    m_chart=new CChart();
    m_chart.Attach(0);
@@ -89,7 +89,7 @@ TSModel::TSModel()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-TSModel::~TSModel()
+TradeModel::~TradeModel()
   {
    m_chart.Detach();
    delete(m_chart);
@@ -97,7 +97,7 @@ TSModel::~TSModel()
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::TradeDataChanged(void)
+void TradeModel::TradeDataChanged(void)
   {
 // If price and stoploss is known the risk percentage and/of lotsize 
 // can be calculated.
@@ -161,7 +161,7 @@ void TSModel::TradeDataChanged(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::RiskChanged(void)
+void TradeModel::RiskChanged(void)
   {
 // If the price and stoploss is known the risk and/of lotsize can
 // be calculated
@@ -210,14 +210,14 @@ void TSModel::RiskChanged(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::Spread(void)
+double TradeModel::Spread(void)
   {
    return(Spread(Symbol()));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::Price(void)
+double TradeModel::Price(void)
   {
    MqlTick tick;
    switch(m_order_type)
@@ -234,7 +234,27 @@ double TSModel::Price(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::Price(double price)
+bool TradeModel::CanPlaceOrder(void)
+  {
+   if(m_price<=0 || m_stop_loss<=0 || m_take_profit<=0)
+     {
+      return(false);
+     }
+   return(true);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool TradeModel::PlaceOrder(void)
+  {
+   m_last_error="";
+   m_last_error="Place Order is not implemented yet";
+   return(false);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool TradeModel::Price(double price)
   {
    m_last_error="";
    MqlTick tick;
@@ -347,14 +367,14 @@ bool TSModel::Price(double price)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::StopLoss(void)
+double TradeModel::StopLoss(void)
   {
    return(m_stop_loss);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::StopLoss(double stop_loss)
+bool TradeModel::StopLoss(double stop_loss)
   {
    m_last_error="";
 
@@ -409,14 +429,14 @@ bool TSModel::StopLoss(double stop_loss)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::TakeProfit(void)
+double TradeModel::TakeProfit(void)
   {
    return(m_take_profit);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::TakeProfit(double take_profit)
+bool TradeModel::TakeProfit(double take_profit)
   {
    m_last_error="";
 
@@ -471,14 +491,14 @@ bool TSModel::TakeProfit(double take_profit)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::OnTickActive(bool active) 
+void TradeModel::OnTickActive(bool active)
   {
    m_on_tick_active=active;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::OnTick(void)
+void TradeModel::OnTick(void)
   {
    if(m_on_tick_active)
      {
@@ -488,21 +508,21 @@ void TSModel::OnTick(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-string TSModel::LastError(void)
+string TradeModel::LastError(void)
   {
    return(m_last_error);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-int TSModel::_OrderType(void)
+int TradeModel::_OrderType(void)
   {
    return(m_order_type);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::_OrderType(int order_type)
+void TradeModel::_OrderType(int order_type)
   {
 // Check if order type is changed
    if(m_order_type == order_type) return;
@@ -517,14 +537,14 @@ void TSModel::_OrderType(int order_type)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::RiskPercentage(void)
+double TradeModel::RiskPercentage(void)
   {
    return(m_risk_percentage);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::RiskPercentage(double risk_percentage)
+bool TradeModel::RiskPercentage(double risk_percentage)
   {
    m_last_error="";
    if((risk_percentage<0.01) || (risk_percentage>100.00))
@@ -539,14 +559,14 @@ bool TSModel::RiskPercentage(double risk_percentage)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::LotSize(void)
+double TradeModel::LotSize(void)
   {
    return(m_lot_size);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::LotSize(double lot_size)
+bool TradeModel::LotSize(double lot_size)
   {
    m_last_error="";
    if(lot_size<0.01)
@@ -561,14 +581,14 @@ bool TSModel::LotSize(double lot_size)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double TSModel::RewardToRisk(void)
+double TradeModel::RewardToRisk(void)
   {
    return(m_reward_to_risk);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool TSModel::RewardToRisk(double reward_to_risk)
+bool TradeModel::RewardToRisk(double reward_to_risk)
   {
    m_last_error="";
    if(reward_to_risk<1.00)
@@ -583,7 +603,7 @@ bool TSModel::RewardToRisk(double reward_to_risk)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::Init(TTradeWindow &settings)
+void TradeModel::Init(TTradeWindow &settings)
   {
    m_risk_type=settings.risk_type;
    m_risk_percentage=settings.risk_percentage;
@@ -596,7 +616,7 @@ void TSModel::Init(TTradeWindow &settings)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::DoNotifyChange(void)
+void TradeModel::DoNotifyChange(void)
   {
    string sparam="TRADE_STATION_MODEL_CHANGED";
    EventChartCustom(0,TRADE_STATION_MODEL_CHANGED,0,0,sparam);
@@ -604,7 +624,7 @@ void TSModel::DoNotifyChange(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::DoNotifyTradeChange(void)
+void TradeModel::DoNotifyTradeChange(void)
   {
    string sparam="TRADE_STATION_MODEL_TRADE_CHANGED";
    EventChartCustom(0,TRADE_STATION_MODEL_TRADE_CHANGED,0,0,sparam);
@@ -612,14 +632,14 @@ void TSModel::DoNotifyTradeChange(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-ENUM_RISK_TYPE TSModel::RiskType(void)
+ENUM_RISK_TYPE TradeModel::RiskType(void)
   {
    return(m_risk_type);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TSModel::RiskType(ENUM_RISK_TYPE risk_type)
+void TradeModel::RiskType(ENUM_RISK_TYPE risk_type)
   {
    m_risk_type=risk_type;
    DoNotifyChange();
@@ -627,57 +647,13 @@ void TSModel::RiskType(ENUM_RISK_TYPE risk_type)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-CChart *TSModel::Chart(void)
+CChart *TradeModel::Chart(void)
   {
    return m_chart;
   }
 //+------------------------------------------------------------------+
-int TSModel::NumberOfDigits(void)
+int TradeModel::NumberOfDigits(void)
   {
    return((int)MarketInfo(Symbol(),MODE_DIGITS));
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool TSModel::isBuyOrder(void)
-  {
-   bool result=false;
-
-   switch(m_order_type)
-     {
-      case OP_BUY:
-      case OP_BUYLIMIT:
-      case OP_BUYSTOP:
-         result=true;
-         break;
-      case OP_SELL:
-      case OP_SELLLIMIT:
-      case OP_SELLSTOP:
-         result=false;
-         break;
-     }
-   return(result);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool TSModel::isSellOrder(void)
-  {
-   bool result=false;
-
-   switch(m_order_type)
-     {
-      case OP_BUY:
-      case OP_BUYLIMIT:
-      case OP_BUYSTOP:
-         result=false;
-         break;
-      case OP_SELL:
-      case OP_SELLLIMIT:
-      case OP_SELLSTOP:
-         result=true;
-         break;
-     }
-   return(result);
   }
 //+------------------------------------------------------------------+

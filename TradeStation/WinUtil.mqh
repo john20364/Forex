@@ -45,6 +45,44 @@ Edit *CreateEdit(string name,CRect &rect)
   {
    return(new Edit(name, rect.left, rect.top, rect.Width(), rect.Height()));
   }
+  
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void SetButtonState(Button *button,bool state)
+  {
+   switch(state)
+     {
+      case true:
+         button.SetBackColor(clrLime);
+         button.SetColor(clrBlack);
+         break;
+      case false :
+         button.SetBackColor(clrRed);
+         button.SetColor(clrWhite);
+         break;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void SetEditState(Edit *edit,bool state)
+  {
+   switch(state)
+     {
+      case true:
+         edit.SetColor(clrLime);
+         edit.SetBorderColor(clrLime);
+         edit.SetReadOnly(false);
+         break;
+      case false:
+         edit.SetColor(clrOrange);
+         edit.SetBorderColor(clrOrange);
+         edit.SetReadOnly(true);
+         break;
+     }
+  }
+  
 //+------------------------------------------------------------------+
 //| defines                                                          |
 //+------------------------------------------------------------------+
