@@ -30,6 +30,11 @@ public:
    bool              ScaleFix(void);
    void              PeriodIndex(int index);
    int               PeriodIndex(void);
+   void              ChartScroll(bool state);
+   bool              ChartScroll(void);
+   void              ChartShift(bool state);
+   bool              ChartShift(void);
+
    void              SynchronizeCharts(void);
   };
 //+------------------------------------------------------------------+
@@ -77,6 +82,36 @@ void ToolModel::ScaleFix(bool state)
 bool ToolModel::ScaleFix(void)
   {
    return(m_chart.ScaleFix());
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ToolModel::ChartScroll(bool state)
+  {
+   m_chart.AutoScroll(state);
+   DoNotifyChange();
+  }
+//+------------------------------------------------------------------+
+//||
+//+------------------------------------------------------------------+
+bool ToolModel::ChartScroll(void)
+  {
+   return(m_chart.AutoScroll());
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ToolModel::ChartShift(bool state)
+  {
+   m_chart.Shift(state);
+   DoNotifyChange();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool ToolModel::ChartShift(void)
+  {
+   return(m_chart.Shift());
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -168,6 +203,8 @@ void ToolModel::SynchronizeCharts(void)
       if(id!=m_chart.ChartId())
         {
          ChartSetInteger(id,CHART_SCALEFIX,m_chart.ScaleFix());
+         ChartSetInteger(id,CHART_AUTOSCROLL,m_chart.AutoScroll());
+         ChartSetInteger(id,CHART_SHIFT,m_chart.Shift());
          ChartSetSymbolPeriod(id,ChartSymbol(id),m_chart.Period());
         }
       id=ChartNext(id);

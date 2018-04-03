@@ -35,6 +35,8 @@ protected:
    Label            *m_broadcast_label;
    Button           *m_broadcast_button;
    Button           *m_scale_fix_button;
+   Button           *m_chart_scroll_button;
+   Button           *m_chart_shift_button;
 
    Label            *m_period_paragraph;
    Button           *m_period_buttons[9];
@@ -86,13 +88,24 @@ ToolWindow::ToolWindow(const string name,
    AddChild(m_broadcast_button);
 
    row++;
-   m.Columns(1);
+   m.Columns(3);
    dim=m.Rect(row,0);
    m_scale_fix_button=CreateButton(m_name+"m_scale_fix_button",dim);
    m_scale_fix_button.SetText("Scale fix");
    AddChild(m_scale_fix_button);
 
+   dim=m.Rect(row,1);
+   m_chart_scroll_button=CreateButton(m_name+"m_chart_scroll_button",dim);
+   m_chart_scroll_button.SetText("Chart scroll");
+   AddChild(m_chart_scroll_button);
+
+   dim=m.Rect(row,2);
+   m_chart_shift_button=CreateButton(m_name+"m_chart_shift_button",dim);
+   m_chart_shift_button.SetText("Chart shift");
+   AddChild(m_chart_shift_button);
+
    row++;
+   m.Columns(1);
    dim=m.Rect(row,0);
    m_period_paragraph=CreateParagraph(m_name+"m_period_paragraph",dim);
    m_period_paragraph.SetText("Period");
@@ -160,6 +173,8 @@ void ToolWindow::UpdateState(void)
    m_broadcast_button.SetText(m_model.Broadcast() ? "On" : "Off");
 
    SetButtonState(m_scale_fix_button,m_model.ScaleFix());
+   SetButtonState(m_chart_scroll_button,m_model.ChartScroll());
+   SetButtonState(m_chart_shift_button,m_model.ChartShift());
 
    for(int i=0;i<ArraySize(m_period_buttons);i++)
      {
@@ -176,7 +191,7 @@ void ToolWindow::OnChartEvent(const int id,const long &lparam,const double &dpar
      {
       case CHARTEVENT_CHART_CHANGE:
          Print("CHARTEVENT_CHART_CHANGE:");
-         UpdateState();
+         m_model.DoNotifyChange();
          break;
       case CHARTEVENT_CUSTOM+TOOL_MODEL_CHANGED:
          UpdateState();
@@ -190,11 +205,19 @@ void ToolWindow::OnChartEvent(const int id,const long &lparam,const double &dpar
            {
             m_model.ScaleFix(!m_model.ScaleFix());
            }
+         else if(!StringCompare(m_name+"m_chart_scroll_button",sparam))
+           {
+            m_model.ChartScroll(!m_model.ChartScroll());
+           }
+         else if(!StringCompare(m_name+"m_chart_shift_button",sparam))
+           {
+            m_model.ChartShift(!m_model.ChartShift());
+           }
          else
            {
             for(int i=0; i<ArraySize(m_period_buttons);i++)
               {
-               if(!StringCompare(m_name+"m_period_buttons"+IntegerToString(i),sparam)) 
+               if(!StringCompare(m_name+"m_period_buttons"+IntegerToString(i),sparam))
                  {
                   m_model.PeriodIndex(i);
                  }
