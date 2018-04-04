@@ -12,6 +12,7 @@
 //| The Ask price is where we OPEN BUY ORDERS and CLOSE SELL ORDERS. |
 //| The Bid price is where we OPEN SELL Orders and CLOSE BUY ORDERS. |                                                                 
 //+------------------------------------------------------------------+
+#include <stdlib.mqh>
 #include <Charts/Chart.mqh>
 #include "../include/Util.mqh"
 #include "Global.mqh"
@@ -247,9 +248,43 @@ bool TradeModel::CanPlaceOrder(void)
 //+------------------------------------------------------------------+
 bool TradeModel::PlaceOrder(void)
   {
+//+------------------------------------------------------------------+
+//| The Ask price is where we OPEN BUY ORDERS and CLOSE SELL ORDERS. |
+//| The Bid price is where we OPEN SELL Orders and CLOSE BUY ORDERS. |                                                                 
+//+------------------------------------------------------------------+
+
    m_last_error="";
-   m_last_error="Place Order is not implemented yet";
-   return(false);
+   int order_id=-1;
+
+   switch(m_order_type)
+     {
+      case OP_BUY:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Ask,0,m_stop_loss,m_take_profit,"Buy order");
+         break;
+      case OP_SELL:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Bid,0,m_stop_loss,m_take_profit,"Sell order");
+         break;
+      case OP_BUYLIMIT:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Buy limit order");
+         break;
+      case OP_BUYSTOP:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Buy stop order");
+         break;
+      case OP_SELLLIMIT:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Sell limit order");
+         break;
+      case OP_SELLSTOP:
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Sell stop order");
+         break;
+     }
+ 
+   if(order_id==-1) 
+     {
+      m_last_error=ErrorDescription(GetLastError());
+      return(false);
+     }
+     
+   return(true);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
