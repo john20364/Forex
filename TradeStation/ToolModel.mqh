@@ -18,14 +18,11 @@ class ToolModel
   {
 private:
    CChart           *m_chart;
-   bool              m_broadcast;
 public:
                      ToolModel();
                     ~ToolModel();
    void              Init(TToolWindow &settings);
    void              DoNotifyChange();
-   void              Broadcast(bool state);
-   bool              Broadcast(void);
    void              ScaleFix(bool state);
    bool              ScaleFix(void);
    void              PeriodIndex(int index);
@@ -52,21 +49,6 @@ ToolModel::~ToolModel()
   {
    m_chart.Detach();
    delete(m_chart);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ToolModel::Broadcast(bool state)
-  {
-   m_broadcast=state;
-   DoNotifyChange();
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool ToolModel::Broadcast(void)
-  {
-   return(m_broadcast);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -187,10 +169,6 @@ void ToolModel::DoNotifyChange()
   {
    string sparam="TOOL_MODEL_CHANGED";
    EventChartCustom(0,TOOL_MODEL_CHANGED,0,0,sparam);
-   if(m_broadcast)
-     {
-      SynchronizeCharts();
-     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -215,8 +193,6 @@ void ToolModel::SynchronizeCharts(void)
 //+------------------------------------------------------------------+
 void ToolModel::Init(TToolWindow &settings)
   {
-   m_broadcast=settings.broadcast;
-
    m_chart.ScaleFix(settings.scale_fix);
    DoNotifyChange();
   }

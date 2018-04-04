@@ -33,7 +33,7 @@ private:
    void              WriteSettings(void);
 protected:
    Label            *m_broadcast_label;
-   Button           *m_broadcast_button;
+   Button           *m_sync_button;
    Button           *m_scale_fix_button;
    Button           *m_chart_scroll_button;
    Button           *m_chart_shift_button;
@@ -84,8 +84,10 @@ ToolWindow::ToolWindow(const string name,
    AddChild(m_broadcast_label);
 
    dim=m.Rect(row,3);
-   m_broadcast_button=CreateButton(m_name+"m_broadcast_button",dim);
-   AddChild(m_broadcast_button);
+   m_sync_button=CreateButton(m_name+"m_sync_button",dim);
+   m_sync_button.SetText("Sync");
+   SetButtonState(m_sync_button,clrBlue,clrWhite,false);
+   AddChild(m_sync_button);
 
    row++;
    m.Columns(3);
@@ -161,7 +163,6 @@ void ToolWindow::ReadSettings(void)
 void ToolWindow::WriteSettings(void)
   {
    setting.values.maximized=IsMaximized();
-   setting.values.broadcast=m_model.Broadcast();
    setting.values.scale_fix=m_model.ScaleFix();
   }
 //+------------------------------------------------------------------+
@@ -169,9 +170,6 @@ void ToolWindow::WriteSettings(void)
 //+------------------------------------------------------------------+
 void ToolWindow::UpdateState(void)
   {
-   SetButtonState(m_broadcast_button,m_model.Broadcast());
-   m_broadcast_button.SetText(m_model.Broadcast() ? "On" : "Off");
-
    SetButtonState(m_scale_fix_button,m_model.ScaleFix());
    SetButtonState(m_chart_scroll_button,m_model.ChartScroll());
    SetButtonState(m_chart_shift_button,m_model.ChartShift());
@@ -180,7 +178,6 @@ void ToolWindow::UpdateState(void)
      {
       SetButtonState(m_period_buttons[i],(m_model.PeriodIndex()==i) ? true : false);
      }
-
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -189,17 +186,51 @@ void ToolWindow::OnChartEvent(const int id,const long &lparam,const double &dpar
   {
    switch(id)
      {
+      case CHARTEVENT_CUSTOM+VISUAL_TOOL_ACTIVATED:
+         Redraw();
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_ENTER:
+         if(!StringCompare(m_name+"m_sync_button",sparam))
+           {
+            m_sync_button.SetFont("Trebuchet MS bold");
+           }
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_LEAVE:
+         if(!StringCompare(m_name+"m_sync_button",sparam))
+           {
+            m_sync_button.SetFont(DEFAULT_FONT_NAME);
+           }
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_BUTTON_PRESSED:
+         if(!StringCompare(m_name+"m_sync_button",sparam))
+           {
+            SetButtonState(m_sync_button,clrBlue,clrWhite,true);
+           }
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_BUTTON_RELEASED:
+         if(!StringCompare(m_name+"m_sync_button",sparam))
+           {
+            SetButtonState(m_sync_button,clrBlue,clrWhite,false);
+           }
+      case CHARTEVENT_CUSTOM+WINDOW_CLICK:
+         if(!StringCompare(m_name+"m_sync_button",sparam))
+           {
+            m_model.SynchronizeCharts();
+           }
+         break;
+      case CHARTEVENT_MOUSE_MOVE:
+         m_sync_button.MouseMove((int)lparam,(int)dparam,(((uint)sparam) &1)==1);
+         break;
       case CHARTEVENT_CHART_CHANGE:
-         Print("CHARTEVENT_CHART_CHANGE:");
          m_model.DoNotifyChange();
          break;
       case CHARTEVENT_CUSTOM+TOOL_MODEL_CHANGED:
          UpdateState();
          break;
       case CHARTEVENT_OBJECT_CLICK :
-         if(!StringCompare(m_name+"m_broadcast_button",sparam))
+         if(!StringCompare(m_name+"m_sync_button",sparam))
            {
-            m_model.Broadcast(!m_model.Broadcast());
+            //m_model.SynchronizeCharts();
            }
          else if(!StringCompare(m_name+"m_scale_fix_button",sparam))
            {

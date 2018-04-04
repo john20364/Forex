@@ -70,6 +70,7 @@ bool TSVisualTool::Enabled(bool enabled)
    if(m_enabled)
      {
       DrawLines();
+      EventChartCustom(0,VISUAL_TOOL_ACTIVATED,0,0,"VISUAL_TOOL_ACTIVATED");
      }
    else
      {
@@ -183,7 +184,7 @@ void TSVisualTool::RemoveLines(void)
 void TSVisualTool::CreatePriceLine(double price)
   {
    m_price_line.Create(m_model.Chart().ChartId(), "m_price_line",0,price);
-   m_price_line.Background(true);
+   //m_price_line.Background(true);
    m_price_line.Color(clrBlue);
    m_price_line.Selected(true);
    m_price_line.Selectable(true);
@@ -194,7 +195,7 @@ void TSVisualTool::CreatePriceLine(double price)
 void TSVisualTool::CreateStopLossLine(double stopploss)
   {
    m_stop_loss_line.Create(m_model.Chart().ChartId(), "m_stop_loss_line",0,stopploss);
-   m_stop_loss_line.Background(true);
+   //m_stop_loss_line.Background(true);
    m_stop_loss_line.Color(clrRed);
    m_stop_loss_line.Selected(true);
    m_stop_loss_line.Selectable(true);
@@ -205,7 +206,7 @@ void TSVisualTool::CreateStopLossLine(double stopploss)
 void TSVisualTool::CreateTakeProfitLine(double takeprofit)
   {
    m_take_profit_line.Create(m_model.Chart().ChartId(), "m_take_profit_line",0,takeprofit);
-   m_take_profit_line.Background(true);
+   //m_take_profit_line.Background(true);
    m_take_profit_line.Color(clrGreen);
    m_take_profit_line.Selected(true);
    m_take_profit_line.Selectable(true);

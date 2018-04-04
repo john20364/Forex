@@ -36,6 +36,8 @@ protected:
    int               m_font_size;
    ENUM_ALIGN_MODE   m_align;
    bool              m_readonly;
+   bool              m_is_pressed;
+   bool              m_is_entered;
 
 public:
                      BaseWindow(const string name="BaseWindow",// label name 
@@ -56,13 +58,13 @@ public:
    void              SetSelection(bool selection);
    void              SetHidden(bool hidden);
    void              SetZOrder(bool z_order);
-   //string            GetName(void);
    void              ShowWindow(bool visible);
    void              ShowWindow(void);
    void              HideWindow(void);
    void              SetText(string text);
    void              SetFont(string font);
    void              SetFontSize(int font_size);
+   int               GetFontSize(void);
 
    void              SetTextAlignment(ENUM_ALIGN_MODE align);
    void              SetReadOnly(bool readonly);
@@ -72,7 +74,8 @@ public:
    int               GetWidth(void);
    int               GetHeight(void);
    string            Text(void);
-   virtual void OnClick(void){};
+   bool              ContainsPoint(int x,int y);
+   void              MouseMove(int x,int y,bool left_mouse_button_down);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -83,6 +86,8 @@ BaseWindow::BaseWindow(const string name,
                        const int width,
                        const int height)
   {
+   m_is_pressed=false;
+   m_is_entered=false;
    m_text=NULL;
    m_name=name;
    m_x = x;
@@ -183,7 +188,7 @@ void BaseWindow::SetText(string text)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-string BaseWindow::Text(void) 
+string BaseWindow::Text(void)
   {
    return(ObjectGetString(0,m_name,OBJPROP_TEXT));
   }
@@ -222,6 +227,13 @@ void BaseWindow::SetFontSize(int font_size)
    m_font_size=font_size;
 //--- set font size 
    ObjectSetInteger(0,m_name,OBJPROP_FONTSIZE,m_font_size);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int BaseWindow::GetFontSize(void) 
+  {
+   return(m_font_size);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -359,5 +371,47 @@ void BaseWindow::SetZOrder(bool z_order)
    m_z_order=z_order;
 //--- set the priority for receiving the event of a mouse click in the chart 
    ObjectSetInteger(0,m_name,OBJPROP_ZORDER,m_z_order);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool BaseWindow::ContainsPoint(int x,int y)
+  {
+   if(x>=m_x && x<=(m_x+m_width) && y>=m_y && y<=(m_y+m_height))
+     {
+      return(true);
+     }
+   return(false);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void BaseWindow::MouseMove(int x,int y,bool left_mouse_button_down)
+  {
+   if(!left_mouse_button_down && !m_is_entered && ContainsPoint(x,y))
+     {
+      m_is_entered=true;
+      EventChartCustom(0,WINDOW_ENTER,0,0,m_name);
+     }
+   else if(!left_mouse_button_down && m_is_entered && !ContainsPoint(x,y))
+     {
+      m_is_entered=false;
+      EventChartCustom(0,WINDOW_LEAVE,0,0,m_name);
+     }
+
+   if(m_is_entered && !m_is_pressed && x>=m_x && x<=(m_x+m_width) && y>=m_y && y<=(m_y+m_height))
+     {
+      if(left_mouse_button_down)
+        {
+         m_is_pressed=true;
+         EventChartCustom(0,WINDOW_BUTTON_PRESSED,0,0,m_name);
+        }
+     }
+   if(m_is_pressed && !left_mouse_button_down)
+     {
+      m_is_pressed=false;
+      EventChartCustom(0,WINDOW_CLICK,0,0,m_name);
+      EventChartCustom(0,WINDOW_BUTTON_RELEASED,0,0,m_name);
+     }
   }
 //+------------------------------------------------------------------+

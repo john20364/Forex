@@ -30,7 +30,6 @@ public:
 void ToolSetting::DefaultSetting(void) 
   {
    values.maximized=true;
-   values.broadcast=false;
    values.scale_fix=false;
   }
 //+------------------------------------------------------------------+

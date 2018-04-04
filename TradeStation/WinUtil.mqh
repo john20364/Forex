@@ -49,6 +49,23 @@ Edit *CreateEdit(string name,CRect &rect)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+void SetButtonState(Button *button,color bgcolor,color fgcolor,bool state)
+  {
+   switch(state)
+     {
+      case true:
+         button.SetBackColor(fgcolor);
+         button.SetColor(bgcolor);
+         break;
+      case false :
+         button.SetBackColor(bgcolor);
+         button.SetColor(fgcolor);
+         break;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void SetButtonState(Button *button,bool state)
   {
    switch(state)

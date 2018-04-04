@@ -476,6 +476,9 @@ void TradeWindow::OnChartEvent(const int id,const long &lparam,const double &dpa
   {
    switch(id)
      {
+      case CHARTEVENT_CUSTOM+VISUAL_TOOL_ACTIVATED:
+         Redraw();
+         break;
       case CHARTEVENT_CUSTOM+WINDOW_MAXIMIZED:
          if(m_name==sparam)
            {

@@ -25,6 +25,12 @@
 #define WINDOW_MINIMIZED 3
 #define WINDOW_MAXIMIZED 4
 #define TOOL_MODEL_CHANGED 5
+#define WINDOW_BUTTON_PRESSED 6
+#define WINDOW_BUTTON_RELEASED 7
+#define WINDOW_ENTER 8
+#define WINDOW_LEAVE 9
+#define WINDOW_CLICK 10
+#define VISUAL_TOOL_ACTIVATED 11
 
 
 //+------------------------------------------------------------------+

@@ -57,6 +57,9 @@ public:
    void              AddChild(BaseWindow *child);
    void              Minimize(void);
    void              Maximize(void);
+   void              Hide(bool is_maximized=true);
+   void              Show(bool is_maximized=true);
+   void              Redraw(void);
    bool              IsMaximized(void);
   };
 //+------------------------------------------------------------------+
@@ -116,10 +119,43 @@ void Window::NotifyMinimized(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void Window::NotifyMaximized(void) 
+void Window::NotifyMaximized(void)
   {
    string sparam=m_name;
    EventChartCustom(0,WINDOW_MAXIMIZED,0,0,sparam);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void Window::Show(bool is_maximized)
+  {
+   m_win_title.ShowWindow();
+   m_caption_label.ShowWindow();
+   if(is_maximized)
+     {
+      Maximize();
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void Window::Hide(bool is_maximized)
+  {
+   if(is_maximized)
+     {
+      Minimize();
+     }
+   m_caption_label.HideWindow();
+   m_win_title.HideWindow();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void Window::Redraw(void)
+  {
+   bool is_maximized=m_client_visible;
+   Hide(is_maximized);
+   Show(is_maximized);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -149,7 +185,7 @@ void Window::Maximize(void)
       w.ShowWindow();
       w=children.GetNext();
      }
-     NotifyMaximized();
+   NotifyMaximized();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -212,9 +248,7 @@ int Window::GetClientHeight(void)
 //+------------------------------------------------------------------+
 void Window::OnCaptionClick(void)
   {
-//Toggle Visibility Client Area
-   m_client_visible=!m_client_visible;
-   if(!m_client_visible)
+   if(m_client_visible)
      {
       Minimize();
      }
