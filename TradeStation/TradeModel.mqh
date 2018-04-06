@@ -39,6 +39,9 @@ private:
 
    void              DoNotifyChange(void);
    void              DoNotifyTradeChange(void);
+
+   double            FilterDouble(double value);
+
 public:
                      TradeModel();
                     ~TradeModel();
@@ -95,6 +98,14 @@ TradeModel::~TradeModel()
    m_chart.Detach();
    delete(m_chart);
   }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+double TradeModel::FilterDouble(double value)
+  {
+   return(StringToDouble(DoubleToString(value,NumberOfDigits())));
+  }
+
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -277,13 +288,14 @@ bool TradeModel::PlaceOrder(void)
          order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Sell stop order");
          break;
      }
- 
-   if(order_id==-1) 
+
+   if(order_id==-1)
      {
-      m_last_error=ErrorDescription(GetLastError());
+      int Errorcode=GetLastError();
+      m_last_error=StringFormat("Errorcode [%d]: %s",Errorcode,ErrorDescription(Errorcode));
       return(false);
      }
-     
+
    return(true);
   }
 //+------------------------------------------------------------------+
@@ -395,7 +407,7 @@ bool TradeModel::Price(double price)
            }
          break;
      }
-   m_price=price;
+   m_price=FilterDouble(price);
    TradeDataChanged();
    return(true);
   }
@@ -457,7 +469,7 @@ bool TradeModel::StopLoss(double stop_loss)
          break;
      }
 
-   m_stop_loss=stop_loss;
+   m_stop_loss=FilterDouble(stop_loss);
    TradeDataChanged();
    return(true);
   }
@@ -519,7 +531,7 @@ bool TradeModel::TakeProfit(double take_profit)
          break;
      }
 
-   m_take_profit=take_profit;
+   m_take_profit=FilterDouble(take_profit);
    TradeDataChanged();
    return(true);
   }
