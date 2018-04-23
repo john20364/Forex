@@ -41,6 +41,7 @@ private:
    void              DoNotifyTradeChange(void);
 
    double            FilterDouble(double value);
+   string            PeriodName(void);
 
 public:
                      TradeModel();
@@ -105,7 +106,6 @@ double TradeModel::FilterDouble(double value)
   {
    return(StringToDouble(DoubleToString(value,NumberOfDigits())));
   }
-
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -257,6 +257,47 @@ bool TradeModel::CanPlaceOrder(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+string TradeModel::PeriodName(void)
+  {
+   string name="";
+
+   switch(Period())
+     {
+      case 1:     // 1 Minute
+         name="1 Minute";
+         break;
+      case 5:     // 5 Minutes
+         name="5 Minutes";
+         break;
+      case 15:    // 15 Minutes
+         name="15 Minutes";
+         break;
+      case 30:    // 30 Minutes
+         name="30 Minutes";
+         break;
+      case 60:    // 60 Minutes
+         name="60 Minutes";
+         break;
+      case 240:   // 4 Hours
+         name="4 Hours";
+         break;
+      case 1440:  // 1 Day
+         name="Daily";
+         break;
+      case 10080: // 1 Week
+         name="Weekly";
+         break;
+      case 43200: // 1 Month
+         name="Montly";
+         break;
+      default:
+         name="Unknown Periode";
+     }
+   return(name);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 bool TradeModel::PlaceOrder(void)
   {
 //+------------------------------------------------------------------+
@@ -270,22 +311,22 @@ bool TradeModel::PlaceOrder(void)
    switch(m_order_type)
      {
       case OP_BUY:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Ask,0,m_stop_loss,m_take_profit,"Buy order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Ask,0,m_stop_loss,m_take_profit,StringFormat("%s Buy order",PeriodName()));
          break;
       case OP_SELL:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Bid,0,m_stop_loss,m_take_profit,"Sell order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,Bid,0,m_stop_loss,m_take_profit,StringFormat("%s Sell order", PeriodName()));
          break;
       case OP_BUYLIMIT:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Buy limit order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,StringFormat("%s Buy limit order", PeriodName()));
          break;
       case OP_BUYSTOP:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Buy stop order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,StringFormat("%s Buy stop order", PeriodName()));
          break;
       case OP_SELLLIMIT:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Sell limit order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,StringFormat("%s Sell limit order", PeriodName()));
          break;
       case OP_SELLSTOP:
-         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,"Sell stop order");
+         order_id=OrderSend(Symbol(),m_order_type,m_lot_size,m_price,0,m_stop_loss,m_take_profit,StringFormat("%s Sell stop order", PeriodName()));
          break;
      }
 
