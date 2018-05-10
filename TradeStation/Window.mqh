@@ -61,6 +61,7 @@ public:
    void              Show(bool is_maximized=true);
    void              Redraw(void);
    bool              IsMaximized(void);
+   void              SetCaption(string caption);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -107,6 +108,13 @@ Window::~Window()
    delete(m_win_client);
    delete(m_caption_label);
    delete(m_win_title);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+Window::SetCaption(string caption) 
+  {
+   m_caption_label.SetText(caption);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

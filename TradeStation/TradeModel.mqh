@@ -41,7 +41,6 @@ private:
    void              DoNotifyTradeChange(void);
 
    double            FilterDouble(double value);
-   string            PeriodName(void);
 
 public:
                      TradeModel();
@@ -78,6 +77,8 @@ public:
 
    bool              CanPlaceOrder(void);
    bool              PlaceOrder(void);
+
+   string            PeriodName(void);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |

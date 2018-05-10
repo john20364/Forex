@@ -452,6 +452,7 @@ void TradeWindow::UpdateState(bool all)
       UpdateRiskType();
       UpdateOrderType();
      }
+
    UpdateTradeState();
    visualtool.Update();
    UpdateOrderButtonState(m_model.CanPlaceOrder());

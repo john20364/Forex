@@ -31,15 +31,13 @@ int OnInit()
    trade_model=new TradeModel();
    tool_model=new ToolModel();
 
-   trade_win=new TradeWindow("Trade Station",0,0,300,100);
+   trade_win=new TradeWindow(trade_model.PeriodName()+" "+Symbol(),0,0,300,100);
    trade_win.Attach(trade_model);
 
    tool_win=new ToolWindow("Toolbox",310,0,360,100);
    tool_win.Attach(tool_model);
-//--- create timer
-//EventSetTimer(60);
-
-//---
+   
+   EventSetMillisecondTimer(100);   
    return(INIT_SUCCEEDED);
   }
 //+------------------------------------------------------------------+
@@ -63,13 +61,24 @@ void OnTick()
 //---
    trade_model.OnTick();
   }
+  
 //+------------------------------------------------------------------+
 //| Timer function                                                   |
 //+------------------------------------------------------------------+
 void OnTimer()
   {
-//---
+   MqlDateTime dt;
 
+   TimeLocal(dt);
+   string local_str=StringFormat("LT: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+
+   TimeGMT(dt);
+   string gmt_str=StringFormat("GMT: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+
+   TimeCurrent(dt);
+   string server_str=StringFormat("ST: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+   
+   tool_win.SetCaption(gmt_str + "     " + local_str + "     " + server_str);   
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |
