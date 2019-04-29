@@ -9,12 +9,12 @@
 #property strict
 
 #include <Charts/Chart.mqh>
-#include "Global.mqh"
-#include "PositionManager.mqh"
-#include "Window.mqh"
-#include "Label.mqh"
-#include "Button.mqh"
-#include "WinUtil.mqh"
+#include "../WinCtrl/Global.mqh"
+#include "../WinCtrl/PositionManager.mqh"
+#include "../WinCtrl/Window.mqh"
+#include "../WinCtrl/Label.mqh"
+#include "../WinCtrl/Button.mqh"
+#include "../WinCtrl/WinUtil.mqh"
 #include "ToolSetting.mqh"
 #include "ToolModel.mqh"
 

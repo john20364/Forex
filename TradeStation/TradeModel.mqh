@@ -14,9 +14,9 @@
 //+------------------------------------------------------------------+
 #include <stdlib.mqh>
 #include <Charts/Chart.mqh>
-#include "../include/Util.mqh"
-#include "Global.mqh"
-#include "Type.mqh"
+#include "../Include/Util.mqh"
+#include "../WinCtrl/Global.mqh"
+#include "../WinCtrl/Type.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

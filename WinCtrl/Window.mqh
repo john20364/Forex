@@ -9,11 +9,11 @@
 #property strict
 
 #include "Global.mqh"
-#include  "Type.mqh"
+#include "Type.mqh"
 #include "BaseWindow.mqh"
 #include "Label.mqh"
 #include "WinCollection.mqh"
-#include "TradeModel.mqh"
+//#include "TradeModel.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

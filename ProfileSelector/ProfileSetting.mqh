@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                           TradeWindowSetting.mqh |
+//|                                               ProfileSetting.mqh |
 //|                        Copyright 2017, MetaQuotes Software Corp. |
 //|                                             https://www.mql5.com |
 //+------------------------------------------------------------------+
@@ -12,37 +12,35 @@
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-class TradeWindowSetting
+class ProfileSetting
   {
 private:
    string            m_filename;
    void              DefaultSetting(void);
+
 public:
-                     TradeWindowSetting();
-                    ~TradeWindowSetting();
-   TTradeWindow      values;
+                     ProfileSetting();
+                    ~ProfileSetting();
+   TProfileSetting   values;
+
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void TradeWindowSetting::DefaultSetting(void)
+ProfileSetting::DefaultSetting(void)
   {
-   values.maximized=true;
-   values.risk_type=RT_PERCENTAGE;
-   values.risk_percentage=0.5;
-   values.lot_size=0.1;
-   values.reward_to_risk=1.0;
-   values.order_type=OP_BUY;
+//    StringToCharArray("FX_EURUSD",values.currencyLabel);
+    StringToCharArray("",values.currencyLabel);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-TradeWindowSetting::TradeWindowSetting()
+ProfileSetting::ProfileSetting()
   {
    DefaultSetting();
 
-//m_filename="TradeWindow"+Symbol()+EnumToString(ENUM_TIMEFRAMES(_Period));
-   m_filename="TradeWindow"+Symbol();
+   //m_filename="ToolWindow"+Symbol()+EnumToString(ENUM_TIMEFRAMES(_Period));
+   m_filename="ProfileSetting";
 
    int fh=FileOpen(m_filename,FILE_READ|FILE_BIN|FILE_COMMON);
    if(fh!=INVALID_HANDLE)
@@ -51,11 +49,12 @@ TradeWindowSetting::TradeWindowSetting()
       uint size=FileReadStruct(fh,values);
       FileClose(fh);
      }
+  
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-TradeWindowSetting::~TradeWindowSetting()
+ProfileSetting::~ProfileSetting()
   {
    int fh=FileOpen(m_filename,FILE_WRITE|FILE_BIN|FILE_COMMON);
    if(fh!=INVALID_HANDLE)

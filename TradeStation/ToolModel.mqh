@@ -9,8 +9,8 @@
 #property strict
 
 #include <Charts/Chart.mqh>
-#include "Global.mqh"
-#include "Type.mqh"
+#include "../WinCtrl/Global.mqh"
+#include "../WinCtrl/Type.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
