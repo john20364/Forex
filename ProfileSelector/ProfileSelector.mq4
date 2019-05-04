@@ -19,10 +19,9 @@ int OnInit()
    ChartSetInteger(0,CHART_SHOW_OHLC,0,false);
    
    profile_model=new ProfileModel();
-   profile_window=new ProfileWindow("Profile Selector",0,0,540,100);
+   profile_window=new ProfileWindow("Profile Selector",0,0,440,100);
 
-//--- create timer
-//EventSetTimer(60);
+  EventSetMillisecondTimer(100);   
 
 //---
    return(INIT_SUCCEEDED);
@@ -50,8 +49,18 @@ void OnTick()
 //+------------------------------------------------------------------+
 void OnTimer()
   {
-//---
+   MqlDateTime dt;
 
+   TimeLocal(dt);
+   string local_str=StringFormat("LT: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+
+   TimeGMT(dt);
+   string gmt_str=StringFormat("GMT: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+
+   TimeCurrent(dt);
+   string server_str=StringFormat("ST: %02d:%02d:%02d",dt.hour,dt.min,dt.sec);
+   
+   profile_window.SetCaption("Profiles    " + gmt_str + "     " + local_str + "     " + server_str); 
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |

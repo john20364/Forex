@@ -18,6 +18,14 @@ enum ENUM_RISK_TYPE
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+enum ENUM_PROFILE_TYPE
+  {
+   PT_FAILED_BREAKOUT=0,
+   PT_4HOUR_INTRADAY=1
+  };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 struct TTradeWindow
   {
    bool              maximized;
@@ -33,15 +41,15 @@ struct TTradeWindow
 struct TProfile
   {
    string            name;
-   string            label;
    int               index;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-struct TProfileSetting 
+struct TProfileSetting
   {
-   char currencyLabel[32];
+   char              currencyLabel[32];
+   ENUM_PROFILE_TYPE profile_type;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |

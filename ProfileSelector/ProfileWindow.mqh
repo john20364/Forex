@@ -29,10 +29,13 @@ private:
    ProfileSetting    settings;
 protected:
    Button           *m_Buttons[];
+   Button           *m_Trade_System_Button;
    void              Init(void);
    void              GenerateButtons(void);
    void              SetState(void);
-
+   void              UpdateButtons(void);
+   void              GetProfiles(string prefix);
+   int               GetProfileIndex(string currency);
 public:
                      ProfileWindow(const string name="Window",
                                                      const int x=10,
@@ -53,14 +56,19 @@ void ProfileWindow::SetState(void)
   {
    for(int i=0; i<ArraySize(m_Buttons); i++)
      {
-      int len = StringLen(CharArrayToString(settings.values.currencyLabel));
-      if (len == 0) return;
+      string currencylabel=CharArrayToString(settings.values.currencyLabel);
+      int len=StringLen(currencylabel);
+
+      if(len == 0) return;
       string test=StringSubstr(m_Buttons[i].GetName(),StringLen(m_Buttons[i].GetName())-len);
+
+      int position=StringFind(currencylabel,"_",0);
+
       if(test==CharArrayToString(settings.values.currencyLabel))
         {
          SetButtonState(m_Buttons[i],true);
         }
-      else 
+      else
         {
          SetButtonState(m_Buttons[i],false);
         }
@@ -69,25 +77,49 @@ void ProfileWindow::SetState(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void ProfileWindow::Init(void)
+void ProfileWindow::GetProfiles(string prefix)
   {
    string arr[];
+   ArrayFree(profiles);
+
    GetFileList(TerminalInfoString(TERMINAL_DATA_PATH)+"\\profiles\\*",arr);
    for(int i=0; i<ArraySize(arr); i++)
      {
-      if(StringFind(arr[i],"FX_")!=-1)
+      if(StringFind(arr[i],prefix)!=-1)
         {
          int size=ArraySize(profiles);
          ArrayResize(profiles,size+1);
-         profiles[size].name=arr[i];
          profiles[size].index=i;
-         profiles[size].label=StringSubstr(arr[i],3);
+         profiles[size].name=StringSubstr(arr[i],StringLen(prefix));
         }
      }
-//for(int i=0; i<ArraySize(profiles); i++) 
-//  {
-//   PrintFormat("[%d] [%s]", profiles[i].index, profiles[i].name);
-//  }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int ProfileWindow::GetProfileIndex(string currency)
+  {
+   for(int i=0; i<ArraySize(profiles); i++)
+     {
+      if(profiles[i].name==currency) return profiles[i].index;
+     }
+   return -1;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ProfileWindow::Init(void)
+  {
+   switch(settings.values.profile_type)
+     {
+      case PT_FAILED_BREAKOUT:
+         GetProfiles("FX_");
+         break;
+      case PT_4HOUR_INTRADAY:
+         GetProfiles("FX4H_");
+         break;
+     }
+
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -103,7 +135,7 @@ void ProfileWindow::GenerateButtons(void)
    m.Offset(GetClientX(),GetClientY());
 
    m.Spacing(5, 5);
-   m.ControlHeight(25);
+   m.ControlHeight(24);
    int row=0;
 
    m.Columns(5);
@@ -115,7 +147,7 @@ void ProfileWindow::GenerateButtons(void)
      {
       dim=m.Rect(row,col_count);
       m_Buttons[i]=CreateButton(m_name+profiles[i].name,dim);
-      m_Buttons[i].SetText(profiles[i].label);
+      m_Buttons[i].SetText(profiles[i].name);
       AddChild(m_Buttons[i]);
 
       col_count++;
@@ -124,8 +156,17 @@ void ProfileWindow::GenerateButtons(void)
          col_count=0;
          row++;
         }
-      //PrintFormat("[%d] [%s]", profiles[i].index, profiles[i].name);
      }
+
+   row++;
+   m.Columns(1);
+   dim=m.Rect(row,0);
+   m_Trade_System_Button=CreateButton(m_name+"m_Trade_System_Button",dim);
+
+   m_Trade_System_Button.SetText((settings.values.profile_type==PT_FAILED_BREAKOUT) ? "Failed Breakout System" : "4 Hour Intraday System");
+   SetButtonState(m_Trade_System_Button,clrWhite,clrBlack,false);
+   AddChild(m_Trade_System_Button);
+
    SetClientHeight(dim.bottom-GetClientY()+5);
    SetState();
   }
@@ -154,14 +195,33 @@ void ProfileWindow::OnChartEvent(const int id,const long &lparam,const double &d
    switch(id)
      {
       case CHARTEVENT_OBJECT_CLICK :
-         for(int i=0; i<ArraySize(profiles); i++)
+         if(!StringCompare(m_name+"m_Trade_System_Button",sparam))
            {
-            if(!StringCompare(m_name+profiles[i].name,sparam))
+            switch(settings.values.profile_type)
               {
-                StringToCharArray(profiles[i].name, settings.values.currencyLabel);
-               //PrintFormat("[%s]  id[%d]",profiles[i].name,profiles[i].index);
-               // Index-2 is minus the \. and \.. files ???
-               PostMainWindowMessage(WM_COMMAND,34100+profiles[i].index-2,0);
+               case PT_FAILED_BREAKOUT:
+                  settings.values.profile_type=PT_4HOUR_INTRADAY;
+                  GetProfiles("FX4H_");
+                  break;
+               case PT_4HOUR_INTRADAY:
+                  settings.values.profile_type=PT_FAILED_BREAKOUT;
+                  GetProfiles("FX_");
+                  break;
+              }
+
+            PostMainWindowMessage(WM_COMMAND,34100+GetProfileIndex(CharArrayToString(settings.values.currencyLabel))-2,0);
+           }
+         else
+           {
+            for(int i=0; i<ArraySize(profiles); i++)
+              {
+               if(!StringCompare(m_name+profiles[i].name,sparam))
+                 {
+                  StringToCharArray(profiles[i].name,settings.values.currencyLabel);
+                  //PrintFormat("[%s]  id[%d]",profiles[i].name,profiles[i].index);
+                  // Index-2 is minus the \. and \.. files ???
+                  PostMainWindowMessage(WM_COMMAND,34100+profiles[i].index-2,0);
+                 }
               }
            }
          break;
