@@ -18,6 +18,7 @@
 #include "../WinCtrl/Button.mqh"
 #include "../WinCtrl/WinUtil.mqh"
 #include "../Include/WinLib.mqh"
+#include "../Include/Util.mqh"
 #include "ProfileSetting.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -30,10 +31,11 @@ private:
 protected:
    Button           *m_Buttons[];
    Button           *m_Trade_System_Button;
+   Button           *m_Tag_Button;
+   Button           *m_Clear_Button;
    void              Init(void);
    void              GenerateButtons(void);
    void              SetState(void);
-   void              UpdateButtons(void);
    void              GetProfiles(string prefix);
    int               GetProfileIndex(string currency);
 public:
@@ -54,23 +56,35 @@ public:
 //+------------------------------------------------------------------+
 void ProfileWindow::SetState(void)
   {
+   string currencylabel=CharArrayToString(settings.values.currencyLabel);
+   int len=StringLen(currencylabel);
+   if(len == 0) return;
+
+   string tagstr=CharArrayToString(settings.values.tags);
+
    for(int i=0; i<ArraySize(m_Buttons); i++)
      {
-      string currencylabel=CharArrayToString(settings.values.currencyLabel);
-      int len=StringLen(currencylabel);
-
-      if(len == 0) return;
-      string test=StringSubstr(m_Buttons[i].GetName(),StringLen(m_Buttons[i].GetName())-len);
-
-      int position=StringFind(currencylabel,"_",0);
-
-      if(test==CharArrayToString(settings.values.currencyLabel))
+      if(m_Buttons[i].Text()==currencylabel)
         {
-         SetButtonState(m_Buttons[i],true);
+         if(StringFind(tagstr,m_Buttons[i].Text())!=-1)
+           {
+            SetButtonState(m_Buttons[i],clrBlack,clrAquamarine,true);
+           }
+         else
+           {
+            SetButtonState(m_Buttons[i],clrBlack,clrLime,true);
+           }
         }
       else
         {
-         SetButtonState(m_Buttons[i],false);
+         if(StringFind(tagstr,m_Buttons[i].Text())!=-1)
+           {
+            SetButtonState(m_Buttons[i],clrBlue,clrWhite,false);
+           }
+         else
+           {
+            SetButtonState(m_Buttons[i],clrRed,clrWhite,false);
+           }
         }
      }
   }
@@ -148,6 +162,10 @@ void ProfileWindow::GenerateButtons(void)
       dim=m.Rect(row,col_count);
       m_Buttons[i]=CreateButton(m_name+profiles[i].name,dim);
       m_Buttons[i].SetText(profiles[i].name);
+
+      //m_Buttons[i].SetFont("Trebuchet MS bold");
+      //m_Buttons[i].SetFont(DEFAULT_FONT_NAME);
+
       AddChild(m_Buttons[i]);
 
       col_count++;
@@ -159,13 +177,26 @@ void ProfileWindow::GenerateButtons(void)
      }
 
    row++;
-   m.Columns(1);
+   m.Columns(4);
    dim=m.Rect(row,0);
+   dim.right=m.Rect(row,1).right;
    m_Trade_System_Button=CreateButton(m_name+"m_Trade_System_Button",dim);
 
    m_Trade_System_Button.SetText((settings.values.profile_type==PT_FAILED_BREAKOUT) ? "Failed Breakout System" : "4 Hour Intraday System");
    SetButtonState(m_Trade_System_Button,clrWhite,clrBlack,false);
    AddChild(m_Trade_System_Button);
+
+   dim=m.Rect(row,2);
+   m_Tag_Button=CreateButton(m_name+"m_Tag_Button",dim);
+   m_Tag_Button.SetText("Tag Toggle");
+   SetButtonState(m_Tag_Button,clrWhite,clrBlack,false);
+   AddChild(m_Tag_Button);
+
+   dim=m.Rect(row,3);
+   m_Clear_Button=CreateButton(m_name+"m_Clear_Button",dim);
+   m_Clear_Button.SetText("Clear Tags");
+   SetButtonState(m_Clear_Button,clrWhite,clrBlack,false);
+   AddChild(m_Clear_Button);
 
    SetClientHeight(dim.bottom-GetClientY()+5);
    SetState();
@@ -210,6 +241,70 @@ void ProfileWindow::OnChartEvent(const int id,const long &lparam,const double &d
               }
 
             PostMainWindowMessage(WM_COMMAND,34100+GetProfileIndex(CharArrayToString(settings.values.currencyLabel))-2,0);
+           }
+         else if(!StringCompare(m_name+"m_Tag_Button",sparam))
+           {
+            string tagstr=CharArrayToString(settings.values.tags);
+            string currency=CharArrayToString(settings.values.currencyLabel);
+            string tagarray[];
+            int len=SeparatedTextToStringArray(tagstr,",",tagarray);
+            bool found=false;
+
+            // Try to find if currency is already in the tagarray
+            for(int i=0; i<len; i++)
+              {
+               if(tagarray[i]==currency)
+                 {
+                  found=true;
+                 }
+              }
+
+            // Remove if found else add
+            if(found)
+              {
+               string tmp;
+               for(int i=0; i<len; i++)
+                 {
+                  if(tagarray[i]!=currency)
+                    {
+                     StringAdd(tmp,tagarray[i]);
+                     StringAdd(tmp,",");
+                    }
+                 }
+               if(StringLen(tmp)>0)
+                 {
+                  StringSetLength(tmp,StringLen(tmp)-1);
+                 }
+               tagstr=tmp;
+              }
+            else
+              {
+               if(StringLen(tagstr)==0)
+                 {
+                  StringAdd(tagstr,currency);
+                 }
+               else
+                 {
+                  StringAdd(tagstr,",");
+                  StringAdd(tagstr,currency);
+                 }
+              }
+
+            ArrayFill(settings.values.tags,0,512,0);
+            if(StringLen(tagstr)!=0)
+              {
+               StringToCharArray(tagstr,settings.values.tags);
+              }
+            SetState();
+            Redraw();
+            //PrintFormat("tagstr [%s]", tagstr);
+
+           }
+         else if(!StringCompare(m_name+"m_Clear_Button",sparam))
+           {
+            ArrayFill(settings.values.tags,0,512,0);
+            SetState();
+            Redraw();
            }
          else
            {

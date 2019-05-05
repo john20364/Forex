@@ -48,6 +48,7 @@ struct TProfile
 //+------------------------------------------------------------------+
 struct TProfileSetting
   {
+   char              tags[512];
    char              currencyLabel[32];
    ENUM_PROFILE_TYPE profile_type;
   };

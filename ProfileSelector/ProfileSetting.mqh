@@ -31,6 +31,7 @@ ProfileSetting::DefaultSetting(void)
   {
 //    StringToCharArray("FX_EURUSD",values.currencyLabel);
     StringToCharArray("",values.currencyLabel);
+    StringToCharArray("",values.tags);
     values.profile_type = PT_FAILED_BREAKOUT;
   }
 //+------------------------------------------------------------------+

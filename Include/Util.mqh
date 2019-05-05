@@ -75,6 +75,9 @@ double LotCalculator(string Currency, double PercentRisk, int Stoploss);
 //+------------------------------------------------------------------+ 
 double RiskCalculator(string Currency, double LotSize, int Stoploss);
 
+string StringArrayToSeparatedText(string &array[],string separator);
+int SeparatedTextToStringArray(string text,string separator,string &array[]);
+
 #import
 
 #endif // __UTIL_MQH__

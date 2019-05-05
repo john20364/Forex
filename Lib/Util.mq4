@@ -162,6 +162,37 @@ double RiskCalculator(string Currency,double LotSize,int Stoploss) export
    double risk=((effective_pips*LotSize)/AccountBalance())*100;
    return risk;
   }
+  
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+string StringArrayToSeparatedText(string &array[],string separator) export
+  {
+   int len=ArraySize(array);
+   if(len == 0) return "";
+   if(StringLen(separator) != 1) return "";
+
+   string result;
+
+   for(int i=0;i<len;i++)
+     {
+      StringAdd(result,array[i]);
+      StringAdd(result,separator);
+     }
+   StringSetLength(result,StringLen(result)-1);
+   return result;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int SeparatedTextToStringArray(string text,string separator,string &array[]) export
+  {
+   if(StringLen(separator) != 1) return 0;
+
+   ushort u_sep=StringGetCharacter(separator,0);
+   return StringSplit(text,u_sep,array);
+  }
+  
 //+------------------------------------------------------------------+
 
 //+------------------------------------------------------------------+
