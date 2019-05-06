@@ -36,6 +36,7 @@ protected:
    void              Init(void);
    void              GenerateButtons(void);
    void              SetState(void);
+   void              SetState(Button *button);
    void              GetProfiles(string prefix);
    int               GetProfileIndex(string currency);
 public:
@@ -54,7 +55,7 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void ProfileWindow::SetState(void)
+void ProfileWindow::SetState(Button *button)
   {
    string currencylabel=CharArrayToString(settings.values.currencyLabel);
    int len=StringLen(currencylabel);
@@ -62,30 +63,37 @@ void ProfileWindow::SetState(void)
 
    string tagstr=CharArrayToString(settings.values.tags);
 
-   for(int i=0; i<ArraySize(m_Buttons); i++)
+   if(button.Text()==currencylabel)
      {
-      if(m_Buttons[i].Text()==currencylabel)
+      if(StringFind(tagstr,button.Text())!=-1)
         {
-         if(StringFind(tagstr,m_Buttons[i].Text())!=-1)
-           {
-            SetButtonState(m_Buttons[i],clrBlack,clrAquamarine,true);
-           }
-         else
-           {
-            SetButtonState(m_Buttons[i],clrBlack,clrLime,true);
-           }
+         SetButtonState(button,clrBlack,clrAquamarine,true);
         }
       else
         {
-         if(StringFind(tagstr,m_Buttons[i].Text())!=-1)
-           {
-            SetButtonState(m_Buttons[i],clrBlue,clrWhite,false);
-           }
-         else
-           {
-            SetButtonState(m_Buttons[i],clrRed,clrWhite,false);
-           }
+         SetButtonState(button,clrBlack,clrLime,true);
         }
+     }
+   else
+     {
+      if(StringFind(tagstr,button.Text())!=-1)
+        {
+         SetButtonState(button,clrBlue,clrWhite,false);
+        }
+      else
+        {
+         SetButtonState(button,clrRed,clrWhite,false);
+        }
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ProfileWindow::SetState(void)
+  {
+   for(int i=0; i<ArraySize(m_Buttons); i++)
+     {
+      SetState(m_Buttons[i]);
      }
   }
 //+------------------------------------------------------------------+
@@ -210,6 +218,7 @@ ProfileWindow::ProfileWindow(const string name,
                              const int width,
                              const int height):Window(name,x,y,width,height)
   {
+   ChartSetInteger(0,CHART_EVENT_MOUSE_MOVE,1);
    GenerateButtons();
   }
 //+------------------------------------------------------------------+
@@ -225,6 +234,39 @@ void ProfileWindow::OnChartEvent(const int id,const long &lparam,const double &d
   {
    switch(id)
      {
+      case CHARTEVENT_MOUSE_MOVE:
+         m_Trade_System_Button.MouseMove((int)lparam,(int)dparam,(((uint)sparam) &1)==1);
+         m_Tag_Button.MouseMove((int)lparam,(int)dparam,(((uint)sparam) &1)==1);
+         m_Clear_Button.MouseMove((int)lparam,(int)dparam,(((uint)sparam) &1)==1);
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_BUTTON_PRESSED:
+         if(!StringCompare(m_name+"m_Trade_System_Button",sparam))
+           {
+            SetButtonState(m_Trade_System_Button,clrWhite,clrBlack,true);
+           }
+         else if(!StringCompare(m_name+"m_Tag_Button",sparam))
+           {
+            SetButtonState(m_Tag_Button,clrWhite,clrBlack,true);
+           }
+         else if(!StringCompare(m_name+"m_Clear_Button",sparam))
+           {
+            SetButtonState(m_Clear_Button,clrWhite,clrBlack,true);
+           }
+         break;
+      case CHARTEVENT_CUSTOM+WINDOW_BUTTON_RELEASED:
+         if(!StringCompare(m_name+"m_Trade_System_Button",sparam))
+           {
+            SetButtonState(m_Trade_System_Button,clrWhite,clrBlack,false);
+           }
+         else if(!StringCompare(m_name+"m_Tag_Button",sparam))
+           {
+            SetButtonState(m_Tag_Button,clrWhite,clrBlack,false);
+           }
+         else if(!StringCompare(m_name+"m_Clear_Button",sparam))
+           {
+            SetButtonState(m_Clear_Button,clrWhite,clrBlack,false);
+           }
+         break;
       case CHARTEVENT_OBJECT_CLICK :
          if(!StringCompare(m_name+"m_Trade_System_Button",sparam))
            {
